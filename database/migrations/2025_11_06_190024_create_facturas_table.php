@@ -11,23 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('facturas', function (Blueprint $table) {
-            $table->id();
-            $table->string('tipo'); // A, B, Nota Débito A/B
-            $table->string('numero')->nullable();
-            $table->string('cliente');
-            $table->string('cuit')->nullable();
-            $table->date('fecha')->nullable();
-            $table->decimal('importe_neto', 12, 2);
-            $table->decimal('iva', 12, 2);
-            $table->decimal('total', 12, 2);
+        Schema::table('facturas', function (Blueprint $table) {
+            $table->string('tipo_comprobante')->nullable();
+            $table->integer('punto_venta')->nullable();
+            $table->date('fecha_emision')->nullable();
+            $table->tinyInteger('concepto')->nullable();
+            $table->string('condicion_venta')->nullable();
+            $table->decimal('importe_total', 12, 2)->default(0);
             $table->string('estado')->default('pendiente');
-            $table->string('cae')->nullable();
-            $table->date('vto_cae')->nullable();
-            $table->foreignId('aprobado_por')->nullable()->constrained('users');
-            $table->timestamps();
-
+            $table->foreignId('creado_por')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('aprobado_por')->nullable()->constrained('users')->nullOnDelete();
         });
+
     }
 
     /**

@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Factura;
 use App\Models\Cliente;
-use App\Models\OrdenCompra;
+use App\Models\FacturaItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FacturaController extends Controller
 {
@@ -15,10 +16,7 @@ class FacturaController extends Controller
      */
     public function index()
     {
-        $facturas = Factura::with('cliente', 'orden')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
+        $facturas = Factura::with('cliente')->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.facturas.index', compact('facturas'));
     }
 
@@ -27,10 +25,8 @@ class FacturaController extends Controller
      */
     public function create()
     {
-        $clientes = Cliente::orderBy('nombres')->get();
-        $ordenes  = OrdenCompra::orderBy('id', 'desc')->get();
-
-        return view('admin.facturas.create', compact('clientes', 'ordenes'));
+        // Ya no se listan clientes, solo se muestra el formulario vacío
+        return view('admin.facturas.create');
     }
 
     /**
@@ -39,52 +35,85 @@ class FacturaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'cliente_id'  => 'required|exists:clientes,id',
-            'orden_id'    => 'nullable|exists:ordenes,id',
-            'tipo'        => 'required|in:A,B',
-            'monto'       => 'required|numeric|min:0',
-            'descripcion' => 'nullable|string|max:500',
+            // Datos del cliente
+            'razon_social'   => 'required|string|max:255',
+            'cuit'           => 'required|digits:11',
+            'condicion_iva'  => 'required|string|max:50',
+            'direccion'      => 'required|string|max:255',
+            'email'          => 'nullable|email|max:255',
+
+            // Datos de la factura
+            'tipo_comprobante' => 'required|in:A,B',
+            'punto_venta'      => 'required|numeric|min:1',
+            'fecha_emision'    => 'required|date',
+            'concepto'         => 'required|in:1,2,3',
+            'condicion_venta'  => 'required|string|max:100',
+
+            // Ítems
+            'items' => 'required|array|min:1',
+            'items.*.descripcion' => 'required|string|max:255',
+            'items.*.cantidad'    => 'required|numeric|min:1',
+            'items.*.precio'      => 'required|numeric|min:0',
+            'items.*.iva'         => 'nullable|numeric|min:0',
         ]);
 
-        $factura = new Factura($validated);
-        $factura->estado = 'pendiente';
-        $factura->creado_por = Auth::id();
-        $factura->save();
+        DB::beginTransaction();
+        try {
+            // Buscar o crear cliente (por CUIT)
+            $cliente = Cliente::firstOrCreate(
+                ['cuit' => $validated['cuit']],
+                [
+                    'razon_social'  => $validated['razon_social'],
+                    'condicion_iva' => $validated['condicion_iva'],
+                    'direccion'     => $validated['direccion'],
+                    'email'         => $validated['email'] ?? null,
+                ]
+            );
 
-        return redirect()
-            ->route('admin.facturas.index')
-            ->with('success', 'Factura creada correctamente y marcada como pendiente.');
-    }
+            // Crear factura
+            $factura = new Factura();
+            $factura->cliente_id       = $cliente->id;
+            $factura->tipo_comprobante = $validated['tipo_comprobante'];
+            $factura->punto_venta      = $validated['punto_venta'];
+            $factura->fecha_emision    = $validated['fecha_emision'];
+            $factura->concepto         = $validated['concepto'];
+            $factura->condicion_venta  = $validated['condicion_venta'];
+            $factura->estado           = 'pendiente';
+            $factura->creado_por       = Auth::id();
+            $factura->save();
 
-    /**
-     * Mostrar formulario de edición
-     */
-    public function edit(Factura $factura)
-    {
-        $clientes = Cliente::all();
-        $ordenes  = OrdenCompra::all();
+            // Guardar ítems
+            $total = 0;
+            foreach ($validated['items'] as $item) {
+                $subtotal = $item['cantidad'] * $item['precio'] * (1 + ($item['iva'] ?? 0) / 100);
 
-        return view('admin.facturas.edit', compact('factura', 'clientes', 'ordenes'));
-    }
+                FacturaItem::create([
+                    'factura_id'   => $factura->id,
+                    'descripcion'  => $item['descripcion'],
+                    'cantidad'     => $item['cantidad'],
+                    'precio_unitario' => $item['precio'],
+                    'iva'          => $item['iva'] ?? 0,
+                    'subtotal'     => $subtotal,
+                ]);
 
-    /**
-     * Actualizar datos de factura
-     */
-    public function update(Request $request, Factura $factura)
-    {
-        $validated = $request->validate([
-            'cliente_id'  => 'required|exists:clientes,id',
-            'orden_id'    => 'nullable|exists:ordenes,id',
-            'tipo'        => 'required|in:A,B',
-            'monto'       => 'required|numeric|min:0',
-            'descripcion' => 'nullable|string|max:500',
-        ]);
+                $total += $subtotal;
+            }
 
-        $factura->update($validated);
+            // Actualizar total en la factura
+            $factura->importe_total = $total;
+            $factura->save();
 
-        return redirect()
-            ->route('admin.facturas.index')
-            ->with('success', 'Factura actualizada correctamente.');
+            DB::commit();
+
+            return redirect()
+                ->route('facturas.index')
+                ->with('success', 'Factura creada correctamente y marcada como pendiente.');
+
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Ocurrió un error al guardar la factura: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -113,7 +142,7 @@ class FacturaController extends Controller
                              ->with('error', 'Solo las facturas aprobadas pueden enviarse a AFIP.');
         }
 
-        // Aquí iría la integración real con ARCA / AFIP
+        // Aquí se integrará con ARCA / AFIP (WSFEv1)
         $factura->estado = 'enviada_afip';
         $factura->save();
 

@@ -1,12 +1,16 @@
+{{-- ============================
+     DATOS DEL COMPROBANTE
+   ============================ --}}
 <div class="row">
 
     {{-- Tipo de Comprobante --}}
     <div class="col-md-4">
         <div class="form-group">
             <label for="tipo_comprobante">Tipo de Comprobante</label>
-            <select class="form-control" name="tipo_comprobante" id="tipo_comprobante" required>
-                <option value="A">Factura A</option>
-                <option value="B">Factura B</option>
+            <select name="tipo_comprobante" id="tipo_comprobante" class="form-control" required>
+                <option value="">Seleccione...</option>
+                <option value="A" {{ old('tipo_comprobante') == 'A' ? 'selected' : '' }}>Factura A</option>
+                <option value="B" {{ old('tipo_comprobante') == 'B' ? 'selected' : '' }}>Factura B</option>
             </select>
         </div>
     </div>
@@ -15,8 +19,9 @@
     <div class="col-md-4">
         <div class="form-group">
             <label for="punto_venta">Punto de Venta</label>
-            <input type="number" name="punto_venta" id="punto_venta" class="form-control"
-                   value="{{ old('punto_venta', 1) }}" required>
+            <input type="number" name="punto_venta" id="punto_venta"
+                   value="{{ old('punto_venta') }}"
+                   class="form-control" required min="1">
         </div>
     </div>
 
@@ -24,8 +29,53 @@
     <div class="col-md-4">
         <div class="form-group">
             <label for="fecha_emision">Fecha de Emisión</label>
-            <input type="date" name="fecha_emision" id="fecha_emision" class="form-control"
-                   value="{{ old('fecha_emision', date('Y-m-d')) }}" required>
+            <input type="date" name="fecha_emision" id="fecha_emision"
+                   value="{{ old('fecha_emision', date('Y-m-d')) }}"
+                   class="form-control" required>
+        </div>
+    </div>
+
+</div>
+
+{{-- ============================
+     DATOS DEL CLIENTE
+   ============================ --}}
+<h4 class="mt-4">Datos del Cliente</h4>
+
+<div class="row">
+
+    {{-- Razón Social --}}
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="razon_social">Razón Social</label>
+            <input type="text" name="razon_social" id="razon_social"
+                   value="{{ old('razon_social') }}"
+                   class="form-control" required>
+        </div>
+    </div>
+
+    {{-- CUIT --}}
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="cuit">CUIT</label>
+            <input type="text" name="cuit" id="cuit"
+                   value="{{ old('cuit') }}"
+                   class="form-control" required pattern="\d{11}" maxlength="11"
+                   placeholder="Solo números">
+        </div>
+    </div>
+
+    {{-- Condición IVA --}}
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="condicion_iva">Condición frente al IVA</label>
+            <select name="condicion_iva" id="condicion_iva" class="form-control" required>
+                <option value="">Seleccione...</option>
+                <option value="RI" {{ old('condicion_iva') == 'RI' ? 'selected' : '' }}>Responsable Inscripto</option>
+                <option value="MT" {{ old('condicion_iva') == 'MT' ? 'selected' : '' }}>Monotributista</option>
+                <option value="CF" {{ old('condicion_iva') == 'CF' ? 'selected' : '' }}>Consumidor Final</option>
+                <option value="EX" {{ old('condicion_iva') == 'EX' ? 'selected' : '' }}>Exento</option>
+            </select>
         </div>
     </div>
 
@@ -33,14 +83,42 @@
 
 <div class="row">
 
-    {{-- Concepto (AFIP) --}}
+    {{-- Dirección --}}
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="direccion">Dirección</label>
+            <input type="text" name="direccion" id="direccion"
+                   value="{{ old('direccion') }}"
+                   class="form-control" required>
+        </div>
+    </div>
+
+    {{-- Email --}}
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="email">Correo Electrónico</label>
+            <input type="email" name="email" id="email"
+                   value="{{ old('email') }}"
+                   class="form-control">
+        </div>
+    </div>
+
+</div>
+
+{{-- ============================
+     CONCEPTO / CONDICIÓN DE VENTA
+   ============================ --}}
+<div class="row">
+
+    {{-- Concepto --}}
     <div class="col-md-4">
         <div class="form-group">
-            <label for="concepto_afip">Concepto</label>
-            <select name="concepto_afip" id="concepto_afip" class="form-control">
-                <option value="1">Productos</option>
-                <option value="2">Servicios</option>
-                <option value="3">Productos y Servicios</option>
+            <label for="concepto">Concepto</label>
+            <select name="concepto" id="concepto" class="form-control" required>
+                <option value="">Seleccione...</option>
+                <option value="1" {{ old('concepto') == 1 ? 'selected' : '' }}>Productos (Bienes)</option>
+                <option value="2" {{ old('concepto') == 2 ? 'selected' : '' }}>Servicios</option>
+                <option value="3" {{ old('concepto') == 3 ? 'selected' : '' }}>Ambos</option>
             </select>
         </div>
     </div>
@@ -49,156 +127,138 @@
     <div class="col-md-4">
         <div class="form-group">
             <label for="condicion_venta">Condición de Venta</label>
-            <select class="form-control" name="condicion_venta" id="condicion_venta">
-                <option value="contado">Contado</option>
-                <option value="cta_cte">Cuenta Corriente</option>
-                <option value="tarjeta">Tarjeta de Crédito</option>
-                <option value="transferencia">Transferencia Bancaria</option>
-            </select>
-        </div>
-    </div>
-
-    {{-- Cliente --}}
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="cliente_id">Cliente</label>
-            <select name="cliente_id" id="cliente_id" class="form-control sel2" required>
-                <option value="">Seleccione un cliente</option>
-                @foreach ($clientes as $cliente)
-                    <option value="{{ $cliente->id }}">
-                        {{ $cliente->razon_social }} ({{ $cliente->cuit }})
-                    </option>
-                @endforeach
+            <select name="condicion_venta" id="condicion_venta" class="form-control" required>
+                <option value="">Seleccione...</option>
+                <option value="contado" {{ old('condicion_venta') == 'contado' ? 'selected' : '' }}>Contado</option>
+                <option value="cuenta_corriente" {{ old('condicion_venta') == 'cuenta_corriente' ? 'selected' : '' }}>Cuenta Corriente</option>
+                <option value="tarjeta" {{ old('condicion_venta') == 'tarjeta' ? 'selected' : '' }}>Tarjeta de Crédito</option>
+                <option value="transferencia" {{ old('condicion_venta') == 'transferencia' ? 'selected' : '' }}>Transferencia Bancaria</option>
             </select>
         </div>
     </div>
 
 </div>
 
-<hr>
+{{-- ============================
+     ÍTEMS / SERVICIOS DETALLADOS
+   ============================ --}}
 
-{{-- Ítems --}}
-<h4>Ítems / Servicios</h4>
+<h4 class="mt-4">Ítems / Servicios</h4>
 
-<div id="items-container">
+<table class="table table-bordered" id="tabla-items">
+    <thead>
+    <tr>
+        <th>Descripción</th>
+        <th style="width: 120px;">Cant.</th>
+        <th style="width: 150px;">Precio Unit.</th>
+        <th style="width: 150px;">IVA</th>
+        <th style="width: 120px;">Subtotal</th>
+        <th style="width: 60px;"></th>
+    </tr>
+    </thead>
 
-    <div class="item-row border p-3 mb-3">
+    <tbody>
+    {{-- Fila inicial --}}
+    <tr>
+        <td>
+            <input type="text" name="items[0][descripcion]" class="form-control" required>
+        </td>
+        <td>
+            <input type="number" name="items[0][cantidad]" class="form-control item-cantidad" min="1" step="1" required>
+        </td>
+        <td>
+            <input type="number" name="items[0][precio]" class="form-control item-precio" min="0" step="0.01" required>
+        </td>
+        <td>
+            <select name="items[0][iva]" class="form-control item-iva">
+                <option value="0">0% (Exento)</option>
+                <option value="10.5">10,5%</option>
+                <option value="21" selected>21%</option>
+                <option value="27">27%</option>
+            </select>
+        </td>
+        <td>
+            <input type="text" class="form-control item-subtotal" readonly>
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button>
+        </td>
+    </tr>
+    </tbody>
+</table>
 
-        <div class="row">
+<button type="button" class="btn btn-primary btn-sm" id="agregar-item">Agregar Ítem</button>
 
-            {{-- Descripción --}}
-            <div class="col-md-6">
-                <label>Descripción</label>
-                <input type="text" name="items[0][descripcion]" class="form-control" required>
-            </div>
-
-            {{-- Cantidad --}}
-            <div class="col-md-2">
-                <label>Cantidad</label>
-                <input type="number" step="0.01" min="0.01" name="items[0][cantidad]" class="form-control item-cantidad" required>
-            </div>
-
-            {{-- Precio Unitario --}}
-            <div class="col-md-2">
-                <label>Precio Unitario</label>
-                <input type="number" step="0.01" name="items[0][precio]" class="form-control item-precio" required>
-            </div>
-
-            {{-- IVA --}}
-            <div class="col-md-2">
-                <label>Alicuota IVA</label>
-                <select class="form-control item-iva" name="items[0][iva]">
-                    <option value="0">0% (Exento)</option>
-                    <option value="10.5">10.5%</option>
-                    <option value="21" selected>21%</option>
-                    <option value="27">27%</option>
-                </select>
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-<button type="button" class="btn btn-primary mb-3" id="add-item-btn">
-    Agregar Ítem
-</button>
-
-<hr>
-
-{{-- Total --}}
-<div class="row">
+{{-- ============================
+     IMPORTE TOTAL
+   ============================ --}}
+<div class="row mt-4">
     <div class="col-md-4 offset-md-8">
         <div class="form-group">
-            <label for="total_factura">Importe Total</label>
-            <input type="number" step="0.01" readonly class="form-control" id="total_factura" name="total_factura">
+            <label for="importe_total">Importe Total</label>
+            <input type="text" id="importe_total" name="importe_total"
+                   class="form-control" readonly>
         </div>
     </div>
 </div>
 
-{{-- Script para agregar ítems --}}
-@section('js')
+{{-- ============================
+     SCRIPTS JS PARA ÍTEMS
+   ============================ --}}
 <script>
-let itemIndex = 1;
+    let fila = 1;
 
-$('#add-item-btn').click(function() {
-    let newItem = `
-    <div class="item-row border p-3 mb-3">
-
-        <div class="row">
-
-            <div class="col-md-6">
-                <label>Descripción</label>
-                <input type="text" name="items[${itemIndex}][descripcion]" class="form-control" required>
-            </div>
-
-            <div class="col-md-2">
-                <label>Cantidad</label>
-                <input type="number" step="0.01" min="0.01" name="items[${itemIndex}][cantidad]"
-                    class="form-control item-cantidad" required>
-            </div>
-
-            <div class="col-md-2">
-                <label>Precio Unitario</label>
-                <input type="number" step="0.01" name="items[${itemIndex}][precio]"
-                    class="form-control item-precio" required>
-            </div>
-
-            <div class="col-md-2">
-                <label>Alicuota IVA</label>
-                <select class="form-control item-iva" name="items[${itemIndex}][iva]">
-                    <option value="0">0%</option>
-                    <option value="10.5">10.5%</option>
-                    <option value="21" selected>21%</option>
-                    <option value="27">27%</option>
-                </select>
-            </div>
-
-        </div>
-
-    </div>`;
-
-    $('#items-container').append(newItem);
-    itemIndex++;
-});
-
-// Cálculo automático del total
-$(document).on('input', '.item-cantidad, .item-precio, .item-iva', function() {
-    let total = 0;
-
-    $('.item-row').each(function() {
-        let cantidad = parseFloat($(this).find('.item-cantidad').val()) || 0;
-        let precio = parseFloat($(this).find('.item-precio').val()) || 0;
-        let iva = parseFloat($(this).find('.item-iva').val()) || 0;
-
-        let subtotal = cantidad * precio;
-        subtotal += subtotal * (iva / 100);
-
-        total += subtotal;
+    // Agregar fila
+    document.getElementById('agregar-item').addEventListener('click', function () {
+        const tabla = document.querySelector('#tabla-items tbody');
+        let nuevaFila = `
+            <tr>
+                <td><input type="text" name="items[${fila}][descripcion]" class="form-control" required></td>
+                <td><input type="number" name="items[${fila}][cantidad]" class="form-control item-cantidad" min="1" step="1" required></td>
+                <td><input type="number" name="items[${fila}][precio]" class="form-control item-precio" min="0" step="0.01" required></td>
+                <td>
+                    <select name="items[${fila}][iva]" class="form-control item-iva">
+                        <option value="0">0%</option>
+                        <option value="10.5">10,5%</option>
+                        <option value="21" selected>21%</option>
+                        <option value="27">27%</option>
+                    </select>
+                </td>
+                <td><input type="text" class="form-control item-subtotal" readonly></td>
+                <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
+            </tr>
+        `;
+        tabla.insertAdjacentHTML('beforeend', nuevaFila);
+        fila++;
     });
 
-    $('#total_factura').val(total.toFixed(2));
-});
+    // Delegación de eventos
+    document.addEventListener('input', function (e) {
+        if (e.target.matches('.item-cantidad, .item-precio, .item-iva')) {
+            recalcular();
+        }
+    });
+
+    document.addEventListener('click', function (e) {
+        if (e.target.matches('.eliminar-item')) {
+            e.target.closest('tr').remove();
+            recalcular();
+        }
+    });
+
+    // Recalcular subtotales + total
+    function recalcular() {
+        let total = 0;
+        document.querySelectorAll('#tabla-items tbody tr').forEach(function (fila) {
+            let cantidad = parseFloat(fila.querySelector('.item-cantidad').value) || 0;
+            let precio   = parseFloat(fila.querySelector('.item-precio').value) || 0;
+            let iva      = parseFloat(fila.querySelector('.item-iva').value) || 0;
+
+            let subtotal = cantidad * precio * (1 + iva / 100);
+            fila.querySelector('.item-subtotal').value = subtotal.toFixed(2);
+
+            total += subtotal;
+        });
+        document.getElementById('importe_total').value = total.toFixed(2);
+    }
 </script>
-@endsection
