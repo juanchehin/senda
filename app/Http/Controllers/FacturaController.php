@@ -20,6 +20,14 @@ class FacturaController extends Controller
         return view('admin.facturas.index', compact('facturas'));
     }
 
+    public function show($id)
+    {
+        $factura = Factura::with(['cliente', 'items'])->findOrFail($id);
+        return view('admin.facturas.show', compact('factura'));
+    }
+
+
+
     /**
      * Formulario de creación de nueva factura
      */
