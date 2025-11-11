@@ -9,6 +9,9 @@ use App\Models\FacturaItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use App\Models\AfipLog;
 class FacturaController extends Controller
 {
     /**
@@ -25,8 +28,6 @@ class FacturaController extends Controller
         $factura = Factura::with(['cliente', 'items'])->findOrFail($id);
         return view('admin.facturas.show', compact('factura'));
     }
-
-
 
     /**
      * Formulario de creación de nueva factura
@@ -141,20 +142,88 @@ class FacturaController extends Controller
     /**
      * Enviar factura aprobada a ARCA / AFIP
      */
-    public function enviarAFIP($id)
+    public function enviar_afip($id)
     {
-        $factura = Factura::findOrFail($id);
+        $factura = Factura::with('items', 'cliente')->findOrFail($id);
 
-        if ($factura->estado !== 'aprobada') {
-            return redirect()->route('admin.facturas.index')
-                             ->with('error', 'Solo las facturas aprobadas pueden enviarse a AFIP.');
+        try {
+            // 1️⃣ Generar XML del comprobante
+            $xml = view('afip.xml.factura', compact('factura'))->render();
+            $xmlPath = storage_path("app/afip/wsaa.xml");
+            file_put_contents($xmlPath, $xml);
+
+            // 2️⃣ Firmar XML con OpenSSL
+            $signed = $this->firmarXML($xmlPath);
+
+            // 3️⃣ Enviar a AFIP
+            $endpoint = config('app.env') === 'production'
+                ? env('AFIP_URL_PROD')
+                : env('AFIP_URL_HOMO');
+
+            $soap = new \SoapClient($endpoint, [
+                'trace' => 1,
+                'exceptions' => true,
+            ]);
+
+            $response = $soap->__soapCall('FECAESolicitar', [
+                ['FeCAEReq' => $signed]
+            ]);
+
+            // 4️⃣ Guardar log
+            AfipLog::create([
+                'servicio' => 'WSFEv1',
+                'accion' => 'FECAESolicitar',
+                'factura_id' => $factura->id,
+                'request' => $soap->__getLastRequest(),
+                'response' => $soap->__getLastResponse(),
+            ]);
+
+            // 5️⃣ Actualizar factura si fue aprobada
+            $resultado = $response->FeDetResp->FECAEDetResponse[0] ?? null;
+            if ($resultado && $resultado->Resultado === 'A') {
+                $factura->update([
+                    'estado' => 'aprobada',
+                    'cae' => $resultado->CAE,
+                    'vto_cae' => $resultado->CAEFchVto,
+                ]);
+            } else {
+                throw new \Exception('Rechazada por AFIP');
+            }
+
+            return back()->with('success', 'Factura enviada y aprobada.');
+        } catch (\Exception $e) {
+            AfipLog::create([
+                'servicio' => 'WSFEv1',
+                'accion' => 'FECAESolicitar',
+                'factura_id' => $factura->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            Log::error('Error AFIP: '.$e->getMessage());
+            return back()->with('error', 'Error al enviar la factura: '.$e->getMessage());
         }
-
-        // Aquí se integrará con ARCA / AFIP (WSFEv1)
-        $factura->estado = 'enviada_afip';
-        $factura->save();
-
-        return redirect()->route('admin.facturas.index')
-                         ->with('success', 'Factura enviada a AFIP correctamente.');
     }
+
+    private function firmarXML($xmlPath)
+    {
+        $certPath = base_path(env('AFIP_CERT_PATH'));
+        $keyPath  = base_path(env('AFIP_KEY_PATH'));
+
+        $xml = file_get_contents($xmlPath);
+
+        openssl_pkcs7_sign(
+            $xmlPath,
+            $xmlPath . '.tmp',
+            "file://$certPath",
+            ["file://$keyPath", ""],
+            [],
+            PKCS7_BINARY | PKCS7_DETACHED
+        );
+
+        $signed = file_get_contents($xmlPath . '.tmp');
+        unlink($xmlPath . '.tmp');
+
+        return $signed;
+    }
+
 }

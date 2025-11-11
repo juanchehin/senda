@@ -36,7 +36,8 @@ Route::middleware(['auth', 'role:secretaria|admin'])->group(function() {
     Route::resource('facturas', FacturaController::class);
     Route::get('facturas/pendientes', [FacturaController::class, 'pendientes'])->name('facturas.pendientes');
     Route::post('facturas/{factura}/afip', [FacturaController::class, 'afip'])->name('facturas.afip');
-    Route::post('facturas/afip', [FacturaController::class, 'afip'])->name('facturas.afip');
+    // Route::post('facturas/afip', [FacturaController::class, 'afip'])->name('facturas.afip');
+    Route::post('facturas/{id}/afip', [FacturaController::class, 'enviar_afip'])->name('facturas.enviar_afip');
 
     // ÓRDENES DE COMPRA
     Route::resource('ordenes', OrdenCompraController::class);
