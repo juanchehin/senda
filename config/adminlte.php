@@ -331,12 +331,12 @@ return [
                     'icon'  => 'fas fa-fw fa-hourglass-half',
                     'can'   => 'aprobar facturas',
                 ],
-                [
-                    'text'  => 'Enviar a AFIP / ARCA',
-                    'route' => 'facturas.afip',
-                    'icon'  => 'fas fa-fw fa-paper-plane',
-                    'can'   => 'enviar afip',
-                ],
+                // [
+                //     'text'  => 'Enviar a AFIP / ARCA',
+                //     'route' => 'facturas.afip',
+                //     'icon'  => 'fas fa-fw fa-paper-plane',
+                //     'can'   => 'enviar afip',
+                // ],
             ],
         ],
 

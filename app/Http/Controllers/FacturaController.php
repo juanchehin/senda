@@ -8,10 +8,10 @@ use App\Models\Cliente;
 use App\Models\FacturaItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\AfipLog;
+use App\Services\Afip\AfipService;
+
 class FacturaController extends Controller
 {
     /**
@@ -202,6 +202,14 @@ class FacturaController extends Controller
             Log::error('Error AFIP: '.$e->getMessage());
             return back()->with('error', 'Error al enviar la factura: '.$e->getMessage());
         }
+    }
+
+    public function enviarAfip($id)
+    {
+        $factura = Factura::findOrFail($id);
+        $afip = new AfipService(true); // true = homologación
+        $res = $afip->enviar($factura);
+        return back()->with('success', 'Factura enviada a AFIP');
     }
 
     private function firmarXML($xmlPath)
