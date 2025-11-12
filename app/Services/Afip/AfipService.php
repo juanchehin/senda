@@ -2,76 +2,143 @@
 
 namespace App\Services\Afip;
 
-use Exception;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use App\Models\SystemLog as AfipLog;
+use SimpleXMLElement;
 
 class AfipService
 {
-    protected $homologacion;
-    protected $wsdl;
-    protected $url;
+    protected $cuit;
+    protected $cert;
+    protected $key;
+    protected $taPath;
+    protected $wsaaWsdl;
+    protected $wsfeWsdl;
 
-    public function __construct($homologacion = true)
+    public function __construct()
     {
-        $this->homologacion = $homologacion;
-
-        if ($homologacion) {
-            // Modo prueba
-            $this->wsdl = 'https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL';
-            $this->url = 'https://wswhomo.afip.gov.ar/wsfev1/service.asmx';
-        } else {
-            // Modo producción
-            $this->wsdl = 'https://servicios1.afip.gov.ar/wsfev1/service.asmx?WSDL';
-            $this->url = 'https://servicios1.afip.gov.ar/wsfev1/service.asmx';
-        }
+        $this->cuit = env('AFIP_CUIT');
+        $this->cert = base_path(env('AFIP_CERT_PATH'));
+        $this->key = base_path(env('AFIP_KEY_PATH'));
+        $this->taPath = storage_path('afip/homologacion/TA.xml'); // TA para homologación
+        $this->wsaaWsdl = env('AFIP_WSDL_WSAA'); // WSAA homologación
+        $this->wsfeWsdl = env('AFIP_WSDL_WSFE'); // WSFE homologación
     }
 
-    public function enviar($factura)
+    /**
+     * Genera el Token de Acceso (TA) para homologación.
+     */
+    public function obtenerToken()
     {
+        Log::info("➡ Generando TRA para AFIP (homologación)");
+
+        // Crear TRA
+        $tra = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><loginTicketRequest version="1.0"></loginTicketRequest>');
+        $header = $tra->addChild('header');
+        $header->addChild('uniqueId', time());
+        $header->addChild('generationTime', gmdate('Y-m-d\TH:i:s', time() - 60*10));
+        $header->addChild('expirationTime', gmdate('Y-m-d\TH:i:s', time() + 60*10));
+        $tra->addChild('service', 'wsfe');
+
+        $traFile = storage_path('afip/homologacion/TRA.xml');
+        $tra->asXML($traFile);
+
+        // Firmar TRA con OpenSSL y generar Base64
+        $signedFile = storage_path('afip/homologacion/TRA_signed.tmp');
+        exec("openssl smime -sign -signer {$this->cert} -inkey {$this->key} -outform DER -nodetach -in {$traFile} -out {$signedFile} 2>&1", $output, $result);
+
+        if ($result !== 0) {
+            $err = implode("\n", $output);
+            Log::error("❌ Error al firmar TRA: {$err}");
+            throw new \Exception("Error al firmar TRA: {$err}");
+        }
+
+        $cms = base64_encode(file_get_contents($signedFile));
+
+        // Llamada a WSAA
+        $client = new \SoapClient($this->wsaaWsdl, ['soap_version' => SOAP_1_2, 'trace' => 1]);
+        $loginCmsResponse = $client->loginCms(['in0' => $cms]);
+        $taXml = $loginCmsResponse->loginCmsReturn;
+
+        // Guardar TA
+        file_put_contents($this->taPath, $taXml);
+        Log::info("✅ TA generado correctamente y guardado en {$this->taPath}");
+
+        return simplexml_load_string($taXml);
+    }
+
+    /**
+     * Envia la factura al WSFE homologación.
+     */
+    public function enviarFactura($factura)
+    {
+        Log::info("➡ Enviando factura ID {$factura->id} a AFIP (homologación)");
+
+        if (!file_exists($this->taPath)) {
+            $this->obtenerToken();
+        }
+
+        $ta = simplexml_load_file($this->taPath);
+        $token = (string)$ta->credentials->token;
+        $sign = (string)$ta->credentials->sign;
+
+        $client = new \SoapClient($this->wsfeWsdl, ['trace' => 1, 'exceptions' => 1]);
+
+        $auth = [
+            'Token' => $token,
+            'Sign'  => $sign,
+            'Cuit'  => $this->cuit,
+        ];
+
+        // Datos simplificados para prueba homologación ($1)
+        $data = [
+            'FeCAEReq' => [
+                'FeCabReq' => [
+                    'CantReg' => 1,
+                    'PtoVta' => $factura->punto_venta,
+                    'CbteTipo' => $factura->tipo_comprobante === 'A' ? 1 : 6,
+                ],
+                'FeDetReq' => [
+                    'FECAEDetRequest' => [
+                        'Concepto' => 1,
+                        'DocTipo' => 80,
+                        'DocNro'  => $factura->cliente->cuit ?? 0,
+                        'CbteDesde' => $factura->numero,
+                        'CbteHasta' => $factura->numero,
+                        'CbteFch' => date('Ymd', strtotime($factura->fecha_emision)),
+                        'ImpTotal' => $factura->importe_total,
+                        'ImpTotConc' => 0,
+                        'ImpNeto' => $factura->importe_total / 1.21,
+                        'ImpIVA'  => $factura->importe_total - ($factura->importe_total / 1.21),
+                        'ImpTrib' => 0,
+                        'MonId' => 'PES',
+                        'MonCotiz' => 1,
+                        'Iva' => [
+                            'AlicIva' => [
+                                'Id' => 5,
+                                'BaseImp' => $factura->importe_total / 1.21,
+                                'Importe' => $factura->importe_total - ($factura->importe_total / 1.21),
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
         try {
-            // 🧾 Datos mínimos de ejemplo
-            $data = [
-                'cbteTipo' => $factura->tipo_comprobante, // Ej: 1 = Factura A, 6 = Factura B
-                'concepto' => 1, // 1 = Productos
-                'docTipo' => 80, // 80 = CUIT
-                'docNro' => $factura->cliente->cuit ?? 0,
-                'cbteDesde' => $factura->numero,
-                'cbteHasta' => $factura->numero,
-                'cbteFch' => date('Ymd', strtotime($factura->fecha)),
-                'impTotal' => $factura->total,
-                'impNeto' => $factura->subtotal,
-                'impIVA' => $factura->iva,
-                'monId' => 'PES',
-                'monCotiz' => 1,
-            ];
+            $res = $client->FECAESolicitar(['Auth' => $auth] + $data);
 
-            // 🚀 Simulación: no llama aún al WS de AFIP real
-            AfipLog::create([
-                'servicio' => 'WSFEv1',
-                'accion' => 'FECAESolicitar',
-                'factura_id' => $factura->id,
-                'respuesta' => json_encode(['estado' => 'OK', 'mensaje' => 'Factura enviada correctamente']),
+            Log::info("✅ Factura enviada correctamente", [
+                'request'  => $client->__getLastRequest(),
+                'response' => $client->__getLastResponse()
             ]);
 
-            Log::info("Factura {$factura->id} enviada correctamente a AFIP (modo ".($this->homologacion ? 'HOMOLOGACIÓN' : 'PRODUCCIÓN').")");
-
-            return [
-                'estado' => 'OK',
-                'mensaje' => 'Factura enviada correctamente',
-            ];
-
-        } catch (Exception $e) {
-
-            AfipLog::create([
-                'servicio' => 'WSFEv1',
-                'accion' => 'FECAESolicitar',
-                'factura_id' => $factura->id,
-                'error' => $e->getMessage(),
+            return $res;
+        } catch (\Exception $e) {
+            Log::error("❌ Error al enviar factura a AFIP: {$e->getMessage()}", [
+                'request'  => $client->__getLastRequest(),
+                'response' => $client->__getLastResponse()
             ]);
-
-            Log::error('Error al enviar factura a AFIP: '.$e->getMessage());
-
             throw $e;
         }
     }

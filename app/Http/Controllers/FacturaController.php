@@ -9,7 +9,7 @@ use App\Models\FacturaItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\AfipLog;
+use App\Models\SystemLog;
 use App\Services\Afip\AfipService;
 
 class FacturaController extends Controller
@@ -144,7 +144,24 @@ class FacturaController extends Controller
      */
     public function enviar_afip($id)
     {
-        $factura = Factura::with('items', 'cliente')->findOrFail($id);
+        SystemLog::create([
+            'context' => 'AFIP',
+            'action' => 'inicio_enviar',
+            'message' => 'Entrando al método enviarAfip con ID: ' . $id,
+            'level' => 'debug',
+            'user_id' => Auth::id(),
+        ]);
+
+        $factura = Factura::findOrFail($id);
+
+        SystemLog::create([
+            'context' => 'AFIP',
+            'action' => 'factura_encontrada',
+            'message' => 'Factura encontrada, estado: ' . $factura->estado,
+            'level' => 'debug',
+            'related_id' => $factura->id,
+            'related_type' => 'App\Models\Factura',
+        ]);
 
         try {
             // 1️⃣ Generar XML del comprobante
@@ -169,8 +186,7 @@ class FacturaController extends Controller
                 ['FeCAEReq' => $signed]
             ]);
 
-            // 4️⃣ Guardar log
-            AfipLog::create([
+            SystemLog::create([
                 'servicio' => 'WSFEv1',
                 'accion' => 'FECAESolicitar',
                 'factura_id' => $factura->id,
@@ -178,7 +194,8 @@ class FacturaController extends Controller
                 'response' => $soap->__getLastResponse(),
             ]);
 
-            // 5️⃣ Actualizar factura si fue aprobada
+
+            // 5 Actualizar factura si fue aprobada
             $resultado = $response->FeDetResp->FECAEDetResponse[0] ?? null;
             if ($resultado && $resultado->Resultado === 'A') {
                 $factura->update([
@@ -192,12 +209,16 @@ class FacturaController extends Controller
 
             return back()->with('success', 'Factura enviada y aprobada.');
         } catch (\Exception $e) {
-            AfipLog::create([
-                'servicio' => 'WSFEv1',
+           SystemLog::create([
+                'contexto' => 'AFIP',
                 'accion' => 'FECAESolicitar',
-                'factura_id' => $factura->id,
-                'error' => $e->getMessage(),
+                'detalle' => 'Factura enviada a AFIP',
+                'referencia_id' => $factura->id,
+                'datos_request' => $soap->__getLastRequest(),
+                'datos_response' => $soap->__getLastResponse(),
+                'nivel' => 'info',
             ]);
+
 
             Log::error('Error AFIP: '.$e->getMessage());
             return back()->with('error', 'Error al enviar la factura: '.$e->getMessage());
@@ -206,11 +227,51 @@ class FacturaController extends Controller
 
     public function enviarAfip($id)
     {
+        Log::info("[".now()->format('Y-m-d H:i:s')."] ➡ Iniciando envío a AFIP para factura ID: {$id}");
+
         $factura = Factura::findOrFail($id);
-        $afip = new AfipService(true); // true = homologación
-        $res = $afip->enviar($factura);
-        return back()->with('success', 'Factura enviada a AFIP');
+        $afip = new AfipService(true); // true = modo homologación
+
+        try {
+            // Obtener Token y enviar factura
+            $ta = $afip->obtenerToken();
+            $res = $afip->enviarFactura($factura);
+
+            // Log en archivo y BD
+            Log::info("✅ Factura enviada correctamente a AFIP (Homologación)", ['factura_id' => $factura->id, 'response' => $res]);
+
+            SystemLog::create([
+                'context' => 'AFIP',
+                'action' => 'EnvioFactura',
+                'related_id' => $factura->id,
+                'related_type' => Factura::class,
+                'level' => 'info',
+                'message' => 'Factura enviada correctamente a AFIP (Homologación)',
+                'data' => $res,
+                'user_id' => Auth::id(),
+            ]);
+
+            return back()->with('success', 'Factura enviada a AFIP (Homologación)');
+        } catch (\Exception $e) {
+
+            Log::error("❌ Error al enviar factura a AFIP: ".$e->getMessage(), ['factura_id' => $factura->id]);
+
+            SystemLog::create([
+                'context' => 'AFIP',
+                'action' => 'EnvioFactura',
+                'related_id' => $factura->id,
+                'related_type' => Factura::class,
+                'level' => 'error',
+                'message' => $e->getMessage(),
+                'data' => [],
+                'user_id' => Auth::id(),
+            ]);
+
+            return back()->with('error', 'Error al enviar a AFIP: '.$e->getMessage());
+        }
     }
+
+
 
     private function firmarXML($xmlPath)
     {

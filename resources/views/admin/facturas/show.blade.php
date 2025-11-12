@@ -127,7 +127,7 @@
                 <div>
                     {{-- Botón para enviar AFIP si está pendiente --}}
                     @if($factura->estado === 'pendiente')
-                        <form action="{{ route('facturas.enviarAfip', $factura->id) }}" method="POST" onsubmit="return confirm('¿Enviar factura a AFIP?')">
+                        <form action="{{ route('facturas.afip', $factura->id) }}" method="POST" onsubmit="return confirm('¿Enviar factura a AFIP?')">
                             @csrf
                             <button class="btn btn-primary">
                                 <i class="fas fa-paper-plane"></i> Enviar a AFIP

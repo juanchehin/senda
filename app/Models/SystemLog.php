@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class SystemLog extends Model
 {
+    protected $table = 'system_logs';
+
     protected $fillable = [
         'context',
         'action',
@@ -19,5 +21,10 @@ class SystemLog extends Model
 
     protected $casts = [
         'data' => 'array',
+    ];
+
+    protected $attributes = [
+        'level' => 'info',
+        'data' => '[]',
     ];
 }
