@@ -233,25 +233,135 @@ class FacturaController extends Controller
         $afip = new AfipService(true); // true = modo homologación
 
         try {
-            // Obtener Token y enviar factura
+
+            // Obtener TA y enviar factura
             $ta = $afip->obtenerToken();
             $res = $afip->enviarFactura($factura);
 
-            // Log en archivo y BD
-            Log::info("✅ Factura enviada correctamente a AFIP", ['factura_id' => $factura->id, 'response' => $res]);
+            // Extraer respuesta AFIP del objeto resultado
+            $afipResponse = $res->FECAESolicitarResult ?? null;
 
-            SystemLog::create([
-                'context' => 'AFIP',
-                'action' => 'EnvioFactura',
-                'related_id' => $factura->id,
-                'related_type' => Factura::class,
-                'level' => 'info',
-                'message' => 'Factura enviada correctamente a AFIP',
-                'data' => $res,
-                'user_id' => Auth::id(),
-            ]);
+            $mensajeUsuario = "Factura enviada correctamente a AFIP.";
+            $mensajeLog = [];
+            $estado = "success";
 
-            return back()->with('success', 'Factura enviada a AFIP');
+            if ($afipResponse) {
+
+                // --- 1) ANALIZAR ERRORES ---
+                if (!empty($afipResponse->Errors) && isset($afipResponse->Errors->Err)) {
+
+                    $error = $afipResponse->Errors->Err;
+                    $code = $error->Code ?? null;
+                    $msg  = $error->Msg ?? 'Error desconocido';
+
+                    $mensajeUsuario = "AFIP rechazó la factura. Código {$code}: {$msg}";
+                    $estado = "error";
+
+                    Log::error(" AFIP rechazó la factura (Error {$code}): {$msg}", [
+                        'factura_id' => $factura->id,
+                        'afip_response' => $afipResponse
+                    ]);
+
+                    SystemLog::create([
+                        'context' => 'AFIP',
+                        'action' => 'EnvioFactura',
+                        'related_id' => $factura->id,
+                        'related_type' => Factura::class,
+                        'level' => 'error',
+                        'message' => "Error {$code}: {$msg}",
+                        'data' => $afipResponse,
+                        'user_id' => Auth::id(),
+                    ]);
+
+                    return back()->with('error', $mensajeUsuario);
+                }
+
+                // --- 2) ANALIZAR OBSERVACIONES (NO SON ERROR PERO ADVERTENCIAS IMPORTANTES) ---
+                if (!empty($afipResponse->FeDetResp->FECAEDetResponse->Observaciones)) {
+
+                    $obs = $afipResponse->FeDetResp->FECAEDetResponse->Observaciones->Obs;
+                    $code = $obs->Code ?? null;
+                    $msg  = $obs->Msg ?? 'Observación desconocida';
+
+                    $mensajeUsuario .= " (Advertencia AFIP {$code}: {$msg})";
+
+                    Log::warning(" Observación AFIP ({$code}): {$msg}", [
+                        'factura_id' => $factura->id,
+                        'afip_response' => $afipResponse
+                    ]);
+
+                    $mensajeLog[] = "Observación {$code}: {$msg}";
+                }
+
+                // --- 3) SI TIENE CAE OK ---
+                $respuestaDetalle = $afipResponse->FeDetResp->FECAEDetResponse ?? null;
+
+                if ($respuestaDetalle && $respuestaDetalle->Resultado === "A") {
+
+                    $cae = $respuestaDetalle->CAE ?? null;
+                    $vto = $respuestaDetalle->CAEFchVto ?? null;
+
+                    $mensajeUsuario = "Factura autorizada por AFIP. CAE: {$cae} (Venc: {$vto})";
+
+                    Log::info("✅ Factura autorizada por AFIP - CAE {$cae}", [
+                        'factura_id' => $factura->id,
+                        'afip_response' => $afipResponse
+                    ]);
+
+                    SystemLog::create([
+                        'context' => 'AFIP',
+                        'action' => 'EnvioFactura',
+                        'related_id' => $factura->id,
+                        'related_type' => Factura::class,
+                        'level' => 'info',
+                        'message' => "Factura autorizada. CAE {$cae}",
+                        'data' => $afipResponse,
+                        'user_id' => Auth::id(),
+                    ]);
+
+                    return back()->with('success', $mensajeUsuario);
+                }
+
+                // --- 4) SI NO FUE AUTORIZADA ---
+                if ($respuestaDetalle && $respuestaDetalle->Resultado === "R") {
+
+                    $obs = $respuestaDetalle->Observaciones->Obs ?? null;
+
+                    if ($obs) {
+                        $code = $obs->Code ?? 'Sin código';
+                        $msg  = $obs->Msg ?? 'AFIP rechazó la factura sin detalles.';
+
+                        $mensajeUsuario = "AFIP rechazó la factura. Código {$code}: {$msg}";
+                    } else {
+                        $mensajeUsuario = "AFIP rechazó la factura sin detalle adicional.";
+                    }
+
+                    Log::error("❌ AFIP rechazó la factura: {$mensajeUsuario}", [
+                        'factura_id' => $factura->id,
+                        'afip_response' => $afipResponse
+                    ]);
+
+                    SystemLog::create([
+                        'context' => 'AFIP',
+                        'action' => 'EnvioFactura',
+                        'related_id' => $factura->id,
+                        'related_type' => Factura::class,
+                        'level' => 'error',
+                        'message' => $mensajeUsuario,
+                        'data' => $afipResponse,
+                        'user_id' => Auth::id(),
+                    ]);
+
+                    return back()->with('error', $mensajeUsuario);
+                }
+
+            }
+
+            // --- SI LLEGA ACÁ: RESPUESTA ENVIADA PERO SIN DETALLE ---
+            Log::info(" AFIP devolvió una respuesta sin detalle claro", ['factura_id' => $factura->id, 'response' => $res]);
+
+            return back()->with('success', $mensajeUsuario);
+
         } catch (\Exception $e) {
 
             Log::error("❌ Error al enviar factura a AFIP: ".$e->getMessage(), ['factura_id' => $factura->id]);
@@ -270,6 +380,7 @@ class FacturaController extends Controller
             return back()->with('error', 'Error al enviar a AFIP: '.$e->getMessage());
         }
     }
+
 
 
 
