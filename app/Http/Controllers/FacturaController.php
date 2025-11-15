@@ -238,7 +238,7 @@ class FacturaController extends Controller
             $res = $afip->enviarFactura($factura);
 
             // Log en archivo y BD
-            Log::info("✅ Factura enviada correctamente a AFIP (Homologación)", ['factura_id' => $factura->id, 'response' => $res]);
+            Log::info("✅ Factura enviada correctamente a AFIP", ['factura_id' => $factura->id, 'response' => $res]);
 
             SystemLog::create([
                 'context' => 'AFIP',
@@ -246,12 +246,12 @@ class FacturaController extends Controller
                 'related_id' => $factura->id,
                 'related_type' => Factura::class,
                 'level' => 'info',
-                'message' => 'Factura enviada correctamente a AFIP (Homologación)',
+                'message' => 'Factura enviada correctamente a AFIP',
                 'data' => $res,
                 'user_id' => Auth::id(),
             ]);
 
-            return back()->with('success', 'Factura enviada a AFIP (Homologación)');
+            return back()->with('success', 'Factura enviada a AFIP');
         } catch (\Exception $e) {
 
             Log::error("❌ Error al enviar factura a AFIP: ".$e->getMessage(), ['factura_id' => $factura->id]);
