@@ -31,27 +31,24 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'     => 'required',
-            'email'    => 'required|email|unique:users,email',
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|confirmed',
-            'roles'    => 'required|array',
+            'roles' => 'required|array',
         ]);
 
         $user = User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'password' => bcrypt($validated['password']),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),  // ✔ correcto
         ]);
 
-        // 🔥 Convertir IDs enviados → nombres de roles
-        $roles = Role::whereIn('id', $validated['roles'])->pluck('name')->toArray();
-
-        // 🔥 Asignar roles correctamente
+        $roles = Role::whereIn('id', $request->roles)->pluck('name')->toArray();
         $user->syncRoles($roles);
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Usuario creado correctamente');
+        return redirect()->route('admin.users.index')->with('success', 'Usuario creado');
     }
+
 
 
 
