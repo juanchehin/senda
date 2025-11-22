@@ -31,7 +31,7 @@ class NotaDebitoController extends Controller
     public function index()
     {
         $notas = NotaDebito::orderBy('id', 'DESC')->paginate(20);
-        return view('notas_debito.index', compact('notas'));
+        return view('admin.notas_debito.index', compact('notas'));
     }
 
     // ---------------------------------------------------

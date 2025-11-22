@@ -320,16 +320,30 @@ return [
                     'can'   => 'crear facturas',
                 ],
                 [
-                    'text'  => 'Cargar Nota de Débito',
-                    'route' => 'notasdebito.create',
-                    'icon'  => 'fas fa-fw fa-file-invoice',
-                    'can'   => 'crear notas de debito',
-                ],
-                [
                     'text'  => 'Listado de Comprobantes',
                     'route' => 'facturas.index',
                     'icon'  => 'fas fa-fw fa-list',
                     'can'   => 'ver facturas',
+                ],
+            ],
+        ],
+        // NOTAS DE DÉBITO
+        [
+            'text'    => 'Notas de Débito',
+            'icon'    => 'fas fa-fw fa-file-invoice',
+            'can'     => 'ver notas de debito',
+            'submenu' => [
+                [
+                    'text'  => 'Cargar Nota de Débito',
+                    'route' => 'notasdebito.create',
+                    'icon'  => 'fas fa-fw fa-plus-square',
+                    'can'   => 'crear notas de debito',
+                ],
+                [
+                    'text'  => 'Listado de Notas de Débito',
+                    'route' => 'notasdebito.index',
+                    'icon'  => 'fas fa-fw fa-list',
+                    'can'   => 'ver notas de debito',
                 ],
             ],
         ],
