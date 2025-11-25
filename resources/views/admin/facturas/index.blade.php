@@ -76,9 +76,25 @@
                                 <a href="{{ route('facturas.show', $factura->id) }}" class="btn btn-sm btn-info">
                                     <i class="fas fa-eye"></i>
                                 </a>
+
                                 <a href="{{ route('facturas.edit', $factura->id) }}" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                {{-- BOTÓN PDF (activo o deshabilitado según estado) --}}
+                                @if($factura->estado === 'aprobada')
+                                    {{-- Activo --}}
+                                    <a href="{{ route('facturas.pdf', $factura->id) }}" 
+                                    class="btn btn-sm btn-danger" target="_blank" title="Descargar PDF">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                @else
+                                    {{-- Deshabilitado gris --}}
+                                    <button class="btn btn-sm btn-secondary" 
+                                            style="pointer-events: none; opacity: 0.5;"
+                                            title="Disponible solo cuando la factura esté aprobada">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @empty

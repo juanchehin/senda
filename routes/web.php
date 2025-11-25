@@ -49,6 +49,9 @@ Route::middleware(['auth', 'role:secretaria|admin'])->group(function() {
     Route::post('/facturas/{id}/enviar-afip', [FacturaController::class, 'enviarAfip'])
         ->name('facturas.enviarAfip');
 
+    Route::get('/facturas/{id}/pdf', [FacturaController::class, 'generar_pdf_factura'])
+        ->name('facturas.pdf');
+
     //
     Route::resource('notasdebito', NotaDebitoController::class);
 

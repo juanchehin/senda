@@ -304,6 +304,35 @@ class FacturaController extends Controller
         }
     }
 
+    public function generar_pdf_factura($id)
+    {
+        $factura = Factura::with('cliente', 'items')->findOrFail($id);
+
+        // Generar QR AFIP (simple)
+        $qrData = [
+            "ver" => 1,
+            "fecha" => $factura->fecha_emision,
+            "cuit" => $factura->cuit_emisor,
+            "ptoVta" => $factura->punto_venta,
+            "tipoCmp" => $factura->tipo_comprobante_codigo,
+            "nroCmp" => $factura->numero_comprobante,
+            "importe" => $factura->importe_total,
+            "moneda" => "PES",
+            "ctz" => 1,
+            "tipoDocRec" => 80,
+            "nroDocRec" => $factura->cliente->cuit,
+            "tipoCodAut" => "E",
+            "codAut" => $factura->cae
+        ];
+
+        $qrBase64 = base64_encode(json_encode($qrData));
+
+        $urlQr = "https://www.afip.gob.ar/fe/qr/?p=" . $qrBase64;
+
+        $pdf = \PDF::loadView('admin.facturas.pdf', compact('factura', 'urlQr'));
+
+        return $pdf->stream("Factura-{$factura->id}.pdf");
+    }
 
 
 
