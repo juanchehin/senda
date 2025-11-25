@@ -331,6 +331,10 @@ class FacturaController extends Controller
 
         $pdf = \PDF::loadView('admin.facturas.pdf', compact('factura', 'urlQr'));
 
+        if ($factura->estado !== 'aprobada') {
+            return redirect()->back()->with('error', 'La factura debe estar aprobada para generar el PDF.');
+        }
+
         return $pdf->stream("Factura-{$factura->id}.pdf");
     }
 
