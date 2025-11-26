@@ -70,7 +70,7 @@
     <tr>
 
         <td style="width:22%; vertical-align:top;">
-            <img src="{{ public_path('assets/img/logo-ingenio.png') }}"
+            <img src="{{ public_path('assets/img/logo-secar.png') }}"
                  style="max-height:70px; margin-left:5px;">
         </td>
 
