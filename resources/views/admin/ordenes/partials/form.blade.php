@@ -71,7 +71,7 @@
             <th>Cantidad</th>
             <th>Unidad</th>
             <th>Precio Unitario</th>
-            <th>Descuento</th>
+            <th>Desc. (%)</th>
             <th>Fecha Entrega</th>
             <th>Total</th>
             <th></th>
