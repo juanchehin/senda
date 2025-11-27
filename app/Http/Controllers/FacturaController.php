@@ -17,11 +17,44 @@ class FacturaController extends Controller
     /**
      * Listado general de facturas
      */
-    public function index()
+    public function index(Request $request)
     {
-        $facturas = Factura::with('cliente')->orderBy('created_at', 'desc')->paginate(10);
+        $query = Factura::with('cliente');
+
+        // FILTRO POR CLIENTE (razón social o nombre)
+        if ($request->filled('cliente')) {
+            $query->whereHas('cliente', function($q) use ($request){
+                $q->where('razon_social', 'like', '%'.$request->cliente.'%');
+            });
+        }
+
+        // FILTRO POR TIPO
+        if ($request->filled('tipo')) {
+            $query->where('tipo_comprobante', $request->tipo);
+        }
+
+        // FILTRO POR ESTADO
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        // FILTRO POR FECHAS (rango)
+        if ($request->filled('desde')) {
+            $query->whereDate('fecha_emision', '>=', $request->desde);
+        }
+
+        if ($request->filled('hasta')) {
+            $query->whereDate('fecha_emision', '<=', $request->hasta);
+        }
+
+        // ORDEN + PAGINACIÓN CONSERVANDO FILTROS
+        $facturas = $query->orderBy('created_at', 'desc')
+                        ->paginate(10)
+                        ->appends($request->query());
+
         return view('admin.facturas.index', compact('facturas'));
     }
+
 
     public function show($id)
     {

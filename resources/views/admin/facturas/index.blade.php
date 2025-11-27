@@ -34,6 +34,71 @@
         </a>
     </div>
 
+    {{-- FILTRO DE BÚSQUEDA --}}
+    <form method="GET" action="{{ route('facturas.index') }}" class="mb-3">
+
+        <div class="row">
+
+            {{-- Cliente --}}
+            <div class="col-md-3">
+                <label>Cliente</label>
+                <input type="text" name="cliente" value="{{ request('cliente') }}"
+                    class="form-control" placeholder="Razón Social / Nombre">
+            </div>
+
+            {{-- Tipo --}}
+            <div class="col-md-2">
+                <label>Tipo</label>
+                <select name="tipo" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="A" {{ request('tipo')=='A' ? 'selected' : '' }}>Factura A</option>
+                    <option value="B" {{ request('tipo')=='B' ? 'selected' : '' }}>Factura B</option>
+                </select>
+            </div>
+
+            {{-- Fecha desde --}}
+            <div class="col-md-2">
+                <label>Desde</label>
+                <input type="date" name="desde" value="{{ request('desde') }}" class="form-control">
+            </div>
+
+            {{-- Fecha hasta --}}
+            <div class="col-md-2">
+                <label>Hasta</label>
+                <input type="date" name="hasta" value="{{ request('hasta') }}" class="form-control">
+            </div>
+
+            {{-- Estado --}}
+            <div class="col-md-2">
+                <label>Estado</label>
+                <select name="estado" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="pendiente" {{ request('estado')=='pendiente'?'selected':'' }}>Pendiente</option>
+                    <option value="aprobada" {{ request('estado')=='aprobada'?'selected':'' }}>Aprobada</option>
+                    <option value="enviada_afip" {{ request('estado')=='enviada_afip'?'selected':'' }}>Enviada AFIP</option>
+                </select>
+            </div>
+
+            {{-- BOTONES --}}
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-dark w-100">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            {{-- LIMPIAR FILTROS --}}
+            <div class="col-md-1 d-flex align-items-end">
+                <a href="{{ route('facturas.index') }}" class="btn btn-secondary w-100" title="Quitar filtros">
+                    <i class="fas fa-broom"></i>
+                </a>
+            </div>
+
+        </div>
+
+    </form>
+
+
+
     {{-- Tabla de facturas --}}
     <div class="card">
         <div class="card-body table-responsive">
@@ -43,7 +108,6 @@
                         <th>ID</th>
                         <th>Cliente</th>
                         <th>Tipo</th>
-                        <th>Punto Venta</th>
                         <th>Fecha</th>
                         <th>Fecha creacion</th>
                         <th>Importe Total</th>
@@ -57,7 +121,6 @@
                             <td>{{ $factura->id }}</td>
                             <td>{{ $factura->cliente->razon_social ?? '—' }}</td>
                             <td>{{ $factura->tipo_comprobante ?? '—' }}</td>
-                            <td>{{ $factura->punto_venta ?? '—' }}</td>
                             <td>{{ \Carbon\Carbon::parse($factura->fecha_emision)->format('d/m/Y') }}</td>
                             <td>{{ \Carbon\Carbon::parse($factura->created_at)->format('d/m/Y') }}</td>
                             <td>${{ number_format($factura->importe_total, 2, ',', '.') }}</td>
