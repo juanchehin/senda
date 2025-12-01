@@ -147,21 +147,11 @@
                                         <i class="fas fa-comment-dots"></i>
                                     </button>
                                 @endrole
-                                {{-- BOTÓN PDF (activo o deshabilitado según estado) --}}
-                                @if($factura->estado === 'aprobada')
-                                    {{-- Activo --}}
-                                    <a href="{{ route('facturas.pdf', $factura->id) }}"
+
+                                <a href="{{ route('facturas.pdf', $factura->id) }}"
                                     class="btn btn-sm btn-danger" target="_blank" title="Descargar PDF">
                                         <i class="fas fa-file-pdf"></i>
-                                    </a>
-                                @else
-                                    {{-- Deshabilitado gris --}}
-                                    <button class="btn btn-sm btn-secondary"
-                                            style="pointer-events: none; opacity: 0.5;"
-                                            title="Disponible solo cuando la factura esté aprobada">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </button>
-                                @endif
+                                </a>
                             </td>
                         </tr>
                     @empty

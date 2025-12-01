@@ -89,6 +89,7 @@ class FacturaController extends Controller
             'fecha_emision'    => 'required|date',
             'concepto'         => 'required|in:1,2,3',
             'condicion_venta'  => 'required|string|max:100',
+            'valor_dolar' => 'required|numeric|min:0',
 
             // Ítems
             'items' => 'required|array|min:1',
@@ -118,6 +119,7 @@ class FacturaController extends Controller
 
             // 👉 Punto de venta fijo
             $factura->punto_venta      = 4;
+            $factura->valor_dolar      = $validated['valor_dolar'];
 
             $factura->fecha_emision    = $validated['fecha_emision'];
             $factura->concepto         = $validated['concepto'];
@@ -151,7 +153,7 @@ class FacturaController extends Controller
 
             return redirect()
                 ->route('facturas.index')
-                ->with('success', 'Factura creada correctamente con punto de venta 4.');
+                ->with('success', 'Factura creada correctamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -341,36 +343,42 @@ class FacturaController extends Controller
     {
         $factura = Factura::with('cliente', 'items')->findOrFail($id);
 
-        // Generar QR AFIP (simple)
+        // ====== CAMPOS SEGUROS (reemplazo con "-") ======
+        $cuitEmisor        = $factura->cuit_emisor ?? "-";
+        $puntoVenta        = $factura->punto_venta ?? "-";
+        $tipoCmpCodigo     = $factura->tipo_comprobante_codigo ?? "-";
+        $numComprobante    = $factura->numero_comprobante ?? "-";
+        $importeTotal      = $factura->importe_total ?? "-";
+        $fechaEmision      = $factura->fecha_emision ?? "-";
+        $cae               = $factura->cae ?? "-";
+        $cuitReceptor      = $factura->cliente->cuit ?? "-";
+
+        // ====== QR AFIP (con valores seguros) ======
         $qrData = [
-            "ver" => 1,
-            "fecha" => $factura->fecha_emision,
-            "cuit" => $factura->cuit_emisor,
-            "ptoVta" => $factura->punto_venta,
-            "tipoCmp" => $factura->tipo_comprobante_codigo,
-            "nroCmp" => $factura->numero_comprobante,
-            "importe" => $factura->importe_total,
-            "moneda" => "PES",
-            "ctz" => 1,
+            "ver"        => 1,
+            "fecha"      => $fechaEmision,
+            "cuit"       => $cuitEmisor,
+            "ptoVta"     => $puntoVenta,
+            "tipoCmp"    => $tipoCmpCodigo,
+            "nroCmp"     => $numComprobante,
+            "importe"    => $importeTotal,
+            "moneda"     => "PES",
+            "ctz"        => 1,
             "tipoDocRec" => 80,
-            "nroDocRec" => $factura->cliente->cuit,
+            "nroDocRec"  => $cuitReceptor,
             "tipoCodAut" => "E",
-            "codAut" => $factura->cae
+            "codAut"     => $cae
         ];
 
         $qrBase64 = base64_encode(json_encode($qrData));
-
         $urlQr = "https://www.afip.gob.ar/fe/qr/?p=" . $qrBase64;
 
+        // PDF
         $pdf = \PDF::loadView('admin.facturas.pdf', compact('factura', 'urlQr'));
 
-        if ($factura->estado !== 'aprobada') {
-            return redirect()->back()->with('error', 'La factura debe estar aprobada para generar el PDF.');
-        }
-
+        // 👉 Ya no se valida el estado
         return $pdf->stream("Factura-{$factura->id}.pdf");
     }
-
 
 
     private function firmarXML($xmlPath)

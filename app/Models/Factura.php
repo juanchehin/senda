@@ -13,6 +13,7 @@ class Factura extends Model
         'fecha_emision',
         'concepto',
         'condicion_venta',
+        'valor_dolar',
         'importe_total',
         'estado',
         'observaciones',

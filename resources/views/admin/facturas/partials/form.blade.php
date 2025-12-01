@@ -129,6 +129,38 @@
     </div>
 
 </div>
+{{-- ============================
+     MONEDA / TIPO DE CAMBIO USD
+   ============================ --}}
+<div class="row mt-3">
+
+    {{-- Moneda --}}
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="moneda">Moneda</label>
+            <select name="moneda" id="moneda" class="form-control" required>
+                <option value="ARS" {{ old('moneda') == 'ARS' ? 'selected' : '' }}>ARS (Pesos)</option>
+                <option value="USD" {{ old('moneda') == 'USD' ? 'selected' : '' }}>USD (Dólares)</option>
+            </select>
+        </div>
+    </div>
+
+    {{-- Tipo de cambio + botón refrescar --}}
+    <div class="col-md-4">
+        <label for="valor_dolar">Tipo de Cambio (USD Mayorista)</label>
+        <div class="input-group">
+            <input type="number" step="0.01" name="valor_dolar" id="valor_dolar"
+                   class="form-control" value="{{ old('valor_dolar', 1) }}" required>
+
+            <button type="button" class="btn btn-info" id="btn-cargar-dolar">
+                <i class="fa fa-sync"></i>
+            </button>
+        </div>
+        <small class="text-muted">Click para actualizar automáticamente desde API</small>
+    </div>
+
+</div>
+
 
 {{-- ============================
      ÍTEMS / SERVICIOS DETALLADOS
@@ -252,4 +284,21 @@
         });
         document.getElementById('importe_total').value = total.toFixed(2);
     }
+
+    // =============
+    // Cargar cotización dólar mayorista desde API
+    // =============
+    document.getElementById('btn-cargar-dolar').addEventListener('click', function () {
+        fetch("https://api.bluelytics.com.ar/v2/latest")
+            .then(r => r.json())
+            .then(data => {
+                if (data?.oficial?.value_sell){
+                    document.getElementById('valor_dolar').value = data.oficial.value_sell; // << CORRECTO
+                } else {
+                    alert("No se pudo obtener el dólar oficial");
+                }
+            })
+            .catch(e => alert("Error consultando API"));
+    });
+
 </script>

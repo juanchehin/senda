@@ -63,6 +63,8 @@
             <h2>FACTURA {{ $factura->tipo_comprobante }}</h2>
             <p>Punto de Venta: {{ $factura->punto_venta }} - Comprobante N°: {{ $factura->numero_comprobante }}</p>
             <p>Fecha de Emisión: {{ \Carbon\Carbon::parse($factura->fecha_emision)->format('d/m/Y') }}</p>
+            <p><strong>Estado:</strong> {{ $factura->estado ?? '-' }}</p>
+
         </div>
 
         <div class="datos-cliente">
@@ -96,9 +98,16 @@
 
         <p class="total">Importe Total: ${{ number_format($factura->importe_total, 2, ',', '.') }}</p>
 
+        <p class="total" style="font-size: 11px; font-weight: normal;">
+            Tipo de Cambio Aplicado:
+            <strong>${{ number_format($factura->valor_dolar, 2, ',', '.') }}</strong>
+        </p>
+
         <div class="info-cae">
             <p><strong>CAE:</strong> {{ $factura->cae }}</p>
-            <p><strong>Vto. CAE:</strong> {{ \Carbon\Carbon::parse($factura->fecha_vto_cae)->format('d/m/Y') }}</p>
+            <p><strong>Vto. CAE:</strong>
+                {{ $factura->vto_cae ? \Carbon\Carbon::parse($factura->vto_cae)->format('d/m/Y') : '-' }}
+            </p>
         </div>
 
         <div class="qr">
