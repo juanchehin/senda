@@ -369,6 +369,28 @@ return [
                 ],
             ],
         ],
+
+        // REMITOS
+        [
+            'text'    => 'Remitos',
+            'icon'    => 'fas fa-fw fa-file-alt', // Ícono similar a documentos
+            'can'     => 'ver remitos',
+            'submenu' => [
+                [
+                    'text'  => 'Nuevo Remito',
+                    'route' => 'remitos.create',
+                    'icon'  => 'fas fa-fw fa-plus-circle',
+                    'can'   => 'crear remitos',
+                ],
+                [
+                    'text'  => 'Listado de Remitos',
+                    'route' => 'remitos.index',
+                    'icon'  => 'fas fa-fw fa-list',
+                    'can'   => 'ver remitos',
+                ],
+            ],
+        ],
+
         // CONFIGURACIÓN (solo administrador)
         [
             'text'    => 'Configuración',

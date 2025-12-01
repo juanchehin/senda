@@ -10,6 +10,7 @@ use App\Http\Controllers\OrdenCompraController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\NotaDebitoController;
+use App\Http\Controllers\RemitoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +75,13 @@ Route::middleware(['auth', 'role:secretaria|admin|ingeniero'])->group(function()
 
     // CLIENTES
     Route::resource('clientes', ClienteController::class);
+
+    // remitos
+    Route::resource('remitos', RemitoController::class);
+
+    Route::post('/remitos/{id}/aprobar', [RemitoController::class, 'aprobar'])
+        ->name('remitos.aprobar');
+
 
 });
 
