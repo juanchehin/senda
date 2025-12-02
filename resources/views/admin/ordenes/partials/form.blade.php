@@ -79,18 +79,43 @@
     </thead>
 
     <tbody id="items-table">
-        <tr>
-            <td><input type="text" name="items[0][codigo]" class="form-control"></td>
-            <td><input type="text" name="items[0][descripcion]" class="form-control"></td>
-            <td><input type="number" step="0.01" name="items[0][cantidad]" class="form-control"></td>
-            <td><input type="text" name="items[0][unidad]" class="form-control"></td>
-            <td><input type="number" step="0.01" name="items[0][precio_unitario]" class="form-control"></td>
-            <td><input type="number" step="0.01" name="items[0][descuento]" class="form-control" value="0"></td>
-            <td><input type="date" name="items[0][fecha_entrega]" class="form-control"></td>
-            <td><input type="number" step="0.01" name="items[0][total]" class="form-control item-total" readonly></td>
-            <td><button type="button" class="btn btn-danger btn-sm remove-row">X</button></td>
-        </tr>
+        @php
+            $oldItems = old('items');
+            $items = $oldItems ?? ($orden->items ?? [ [] ]);
+        @endphp
+
+        @foreach($items as $i => $item)
+            <tr>
+                <td><input type="text" name="items[{{ $i }}][codigo]" class="form-control"
+                    value="{{ $item['codigo'] ?? '' }}"></td>
+
+                <td><input type="text" name="items[{{ $i }}][descripcion]" class="form-control"
+                    value="{{ $item['descripcion'] ?? '' }}"></td>
+
+                <td><input type="number" step="0.01" name="items[{{ $i }}][cantidad]" class="form-control"
+                    value="{{ $item['cantidad'] ?? '' }}"></td>
+
+                <td><input type="text" name="items[{{ $i }}][unidad]" class="form-control"
+                    value="{{ $item['unidad'] ?? '' }}"></td>
+
+                <td><input type="number" step="0.01" name="items[{{ $i }}][precio_unitario]" class="form-control"
+                    value="{{ $item['precio_unitario'] ?? '' }}"></td>
+
+                <td><input type="number" step="0.01" name="items[{{ $i }}][descuento]" class="form-control"
+                    value="{{ $item['descuento'] ?? 0 }}"></td>
+
+                <td><input type="date" name="items[{{ $i }}][fecha_entrega]" class="form-control"
+                    value="{{ $item['fecha_entrega'] ?? '' }}"></td>
+
+                <td><input type="number" step="0.01" name="items[{{ $i }}][total]" class="form-control item-total"
+                    value="{{ $item['total'] ?? '' }}" readonly></td>
+
+                <td><button type="button" class="btn btn-danger btn-sm remove-row">X</button></td>
+            </tr>
+        @endforeach
+
     </tbody>
+
 </table>
 
 
@@ -119,7 +144,7 @@
 
 
 <script>
-    let row = {{ isset($orden) ? count($orden->items) : 1 }};
+    let row = {{ count($items) }};
 
     document.getElementById('add-row').addEventListener('click', function() {
         var table = document.getElementById('items-table');
