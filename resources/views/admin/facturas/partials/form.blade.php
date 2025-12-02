@@ -118,15 +118,12 @@
     <div class="col-md-4">
         <div class="form-group">
             <label for="condicion_venta">Condición de Venta</label>
-            <select name="condicion_venta" id="condicion_venta" class="form-control" required>
-                <option value="">Seleccione...</option>
-                <option value="contado" {{ old('condicion_venta') == 'contado' ? 'selected' : '' }}>Contado</option>
-                <option value="cuenta_corriente" {{ old('condicion_venta') == 'cuenta_corriente' ? 'selected' : '' }}>Cuenta Corriente</option>
-                <option value="tarjeta" {{ old('condicion_venta') == 'tarjeta' ? 'selected' : '' }}>Tarjeta de Crédito</option>
-                <option value="transferencia" {{ old('condicion_venta') == 'transferencia' ? 'selected' : '' }}>Transferencia Bancaria</option>
-            </select>
+            <input type="text" class="form-control" value="Otros" disabled>
+
+            <input type="hidden" name="condicion_venta" value="otros">
         </div>
     </div>
+
 
 </div>
 {{-- ============================
@@ -215,6 +212,29 @@
 </table>
 
 <button type="button" class="btn btn-primary btn-sm" id="agregar-item">Agregar Ítem</button>
+
+{{-- ============================
+     REMITOS ASOCIADOS
+   ============================ --}}
+<h4 class="mt-4">Remitos Asociados</h4>
+
+<table class="table table-bordered" id="tabla-remitos">
+    <thead>
+    <tr>
+        <th style="width: 150px;">Pto. Venta</th>
+        <th style="width: 180px;">Comprobante</th>
+        <th style="width: 180px;">Fecha Emisión</th>
+        <th style="width: 60px;"></th>
+    </tr>
+    </thead>
+
+    <tbody id="remitos-body">
+        {{-- Se cargarán dinámicamente desde JS --}}
+    </tbody>
+</table>
+
+<button type="button" class="btn btn-secondary btn-sm" id="agregar-remito">Agregar Remito</button>
+
 
 {{-- ============================
      IMPORTE TOTAL
@@ -394,6 +414,77 @@
             $(moneda).on('select2:select', actualizarCampoDolar);
         }
     });
+
+    // ======================================
+    // REMITOS ASOCIADOS (dinámicos)
+    // ======================================
+
+    let filaRemito = 1;
+
+    document.getElementById('agregar-remito').addEventListener('click', function () {
+        agregarFilaRemito(filaRemito);
+        filaRemito++;
+    });
+
+    // Función para agregar fila
+    function agregarFilaRemito(i, data = null) {
+        const tbody = document.querySelector('#tabla-remitos tbody');
+
+        let nuevaFila = `
+            <tr>
+                <td>
+                    <input type="number" name="remitos[${i}][pto_venta]"
+                        class="form-control" min="1" required
+                        value="${data?.pto_venta ?? ''}">
+                </td>
+
+                <td>
+                    <input type="number" name="remitos[${i}][comprobante]"
+                        class="form-control" min="1" required
+                        value="${data?.comprobante ?? ''}">
+                </td>
+
+                <td>
+                    <input type="date" name="remitos[${i}][fecha_emision]"
+                        class="form-control" required
+                        value="${data?.fecha_emision ?? ''}">
+                </td>
+
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm eliminar-remito">&times;</button>
+                </td>
+            </tr>
+        `;
+
+        tbody.insertAdjacentHTML('beforeend', nuevaFila);
+    }
+
+    // Eliminar fila
+    document.addEventListener('click', function (e) {
+        if (e.target.matches('.eliminar-remito')) {
+            e.target.closest('tr').remove();
+        }
+    });
+
+    // Reconstruir desde old() si hubo error de validación
+    document.addEventListener("DOMContentLoaded", function () {
+
+        let oldRemitos = @json(old('remitos'));
+
+        if (oldRemitos && Object.keys(oldRemitos).length > 0) {
+            filaRemito = 0;
+            Object.keys(oldRemitos).forEach(function (idx) {
+                agregarFilaRemito(filaRemito, oldRemitos[idx]);
+                filaRemito++;
+            });
+        } else {
+            // Fila inicial (opcional, si querés que arranque vacío no agregues esto)
+            agregarFilaRemito(0);
+            filaRemito = 1;
+        }
+
+    });
+
 
 
 

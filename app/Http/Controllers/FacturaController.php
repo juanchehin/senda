@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+
+use App\Models\SystemLog;
 use App\Models\Factura;
 use App\Models\Cliente;
 use App\Models\FacturaItem;
+use App\Models\FacturaRemito;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\SystemLog;
+
 use App\Services\Afip\AfipService;
 
 class FacturaController extends Controller
@@ -72,11 +76,12 @@ class FacturaController extends Controller
     }
 
     /**
-     * Guardar nueva factura (queda en “pendiente”)
+     * Guardar nueva factura
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
+
             // Datos del cliente
             'razon_social'   => 'required|string|max:255',
             'cuit'           => 'required|digits:11',
@@ -89,9 +94,8 @@ class FacturaController extends Controller
             'fecha_emision'    => 'required|date',
             'concepto'         => 'required|in:1,2,3',
             'condicion_venta'  => 'required|string|max:100',
-            'moneda' => 'required|in:ARS,USD',
-            'valor_dolar' => 'required_if:moneda,USD|numeric|min:0',
-
+            'moneda'           => 'required|in:ARS,USD',
+            'valor_dolar'      => 'required_if:moneda,USD|numeric|min:0',
 
             // Campos adicionales SOLO para Servicios
             'fecha_desde'      => 'required_if:concepto,2|nullable|date',
@@ -104,10 +108,20 @@ class FacturaController extends Controller
             'items.*.cantidad'    => 'required|numeric|min:1',
             'items.*.precio'      => 'required|numeric|min:0',
             'items.*.iva'         => 'nullable|numeric|min:0',
+
+            // ========================
+            // Remitos Asociados (NUEVO)
+            // ========================
+            'remitos' => 'nullable|array',
+            'remitos.*.pto_venta'    => 'nullable|numeric|min:1',
+            'remitos.*.comprobante'  => 'nullable|numeric|min:1',
+            'remitos.*.fecha_emision'=> 'nullable|date',
+
         ]);
 
         DB::beginTransaction();
         try {
+
             // Buscar o crear cliente
             $cliente = Cliente::firstOrCreate(
                 ['cuit' => $validated['cuit']],
@@ -131,20 +145,26 @@ class FacturaController extends Controller
             $factura->fecha_emision    = $validated['fecha_emision'];
             $factura->concepto         = $validated['concepto'];
             $factura->condicion_venta  = $validated['condicion_venta'];
-            $factura->moneda = $validated['moneda'];
+            $factura->moneda           = $validated['moneda'];
             $factura->estado           = 'pendiente';
             $factura->creado_por       = Auth::id();
 
-            // NUEVOS CAMPOS DE SERVICIOS
+            // Campos Servicios
             $factura->fecha_desde      = $validated['fecha_desde']      ?? null;
             $factura->fecha_hasta      = $validated['fecha_hasta']      ?? null;
             $factura->vencimiento_pago = $validated['vencimiento_pago'] ?? null;
 
             $factura->save();
 
-            // Guardar ítems
+
+
+            // ===================================
+            // GUARDAR ÍTEMS
+            // ===================================
             $total = 0;
+
             foreach ($validated['items'] as $item) {
+
                 $subtotal = $item['cantidad'] * $item['precio'] * (1 + ($item['iva'] ?? 0) / 100);
 
                 FacturaItem::create([
@@ -162,6 +182,35 @@ class FacturaController extends Controller
             $factura->importe_total = $total;
             $factura->save();
 
+
+
+            // ===================================
+            // GUARDAR REMITOS ASOCIADOS (NUEVO)
+            // ===================================
+            if (!empty($validated['remitos'])) {
+
+                foreach ($validated['remitos'] as $remito) {
+
+                    // No crear filas vacías
+                    if (
+                        empty($remito['pto_venta']) &&
+                        empty($remito['comprobante']) &&
+                        empty($remito['fecha_emision'])
+                    ) {
+                        continue;
+                    }
+
+                    FacturaRemito::create([
+                        'factura_id'    => $factura->id,
+                        'pto_venta'     => $remito['pto_venta'],
+                        'comprobante'   => $remito['comprobante'],
+                        'fecha_emision' => $remito['fecha_emision'],
+                    ]);
+                }
+            }
+
+
+
             DB::commit();
 
             return redirect()
@@ -170,9 +219,10 @@ class FacturaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Ocurrió un error al guardar la factura: ' . $e->getMessage());
+            return back()->with('error', 'Ocurrió un error al guardar la factura: ' . $e->getMessage())->withInput();
         }
     }
+
 
 
 

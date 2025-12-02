@@ -117,6 +117,35 @@
             </tbody>
         </table>
 
+        {{-- =============================
+            REMITOS ASOCIADOS (si existen)
+        ============================= --}}
+        @if(isset($factura->remitos) && $factura->remitos->count() > 0)
+            <h4 style="margin-top: 25px;">Remitos Asociados</h4>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Pto. Venta</th>
+                        <th>Comprobante</th>
+                        <th>Fecha de Emisión</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($factura->remitos as $i => $remito)
+                        <tr>
+                            <td>{{ $i + 1 }}</td>
+                            <td>{{ str_pad($remito->pto_venta, 4, '0', STR_PAD_LEFT) }}</td>
+                            <td>{{ str_pad($remito->comprobante, 8, '0', STR_PAD_LEFT) }}</td>
+                            <td>{{ \Carbon\Carbon::parse($remito->fecha_emision)->format('d/m/Y') }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+
+
         <p class="total">Importe Total: ${{ number_format($factura->importe_total, 2, ',', '.') }}</p>
 
         <p class="total" style="font-size: 12px;">

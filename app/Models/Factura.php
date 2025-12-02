@@ -33,5 +33,11 @@ class Factura extends Model
         return $this->belongsTo(Cliente::class);
     }
 
+    public function remitos()
+    {
+        return $this->hasMany(FacturaRemito::class);
+    }
+
+
 
 }
