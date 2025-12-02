@@ -223,9 +223,6 @@ class FacturaController extends Controller
         }
     }
 
-
-
-
     /**
      * Aprobar factura (Ingeniero)
      */
@@ -240,6 +237,9 @@ class FacturaController extends Controller
                          ->with('success', 'Factura aprobada correctamente.');
     }
 
+    /**
+     * Enviar factura a AFIP
+     */
     public function enviarAfip($id)
     {
         Log::info("[".now()->format('Y-m-d H:i:s')."] ➡ Iniciando envío a AFIP para factura ID: {$id}");

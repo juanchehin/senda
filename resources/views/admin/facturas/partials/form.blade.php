@@ -118,9 +118,9 @@
     <div class="col-md-4">
         <div class="form-group">
             <label for="condicion_venta">Condición de Venta</label>
-            <input type="text" class="form-control" value="Otros" disabled>
+            <input type="text" class="form-control" value="otra" disabled>
 
-            <input type="hidden" name="condicion_venta" value="otros">
+            <input type="hidden" name="condicion_venta" value="otra">
         </div>
     </div>
 

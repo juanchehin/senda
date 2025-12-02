@@ -1,10 +1,7 @@
 <?php
 
 namespace App\Services\Afip;
-
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use SimpleXMLElement;
 
 class AfipService
 {
@@ -129,10 +126,13 @@ class AfipService
 
         $ta = simplexml_load_file($this->taPath);
         $token = (string)$ta->credentials->token;
-        $sign = (string)$ta->credentials->sign;
+        $sign  = (string)$ta->credentials->sign;
 
-        // === 2) CLIENTE AFIP ===
-        $client = new \SoapClient($this->wsfeWsdl, ['trace' => 1, 'exceptions' => 1]);
+        // === 2) SOAP CLIENT ===
+        $client = new \SoapClient($this->wsfeWsdl, [
+            'trace' => 1,
+            'exceptions' => 1
+        ]);
 
         $auth = [
             'Token' => $token,
@@ -140,9 +140,9 @@ class AfipService
             'Cuit'  => $this->cuit,
         ];
 
-        // === 3) OBTENER ÚLTIMO NÚMERO DESDE AFIP ===
+        // === 3) OBTENER SIGUIENTE NÚMERO ===
         $ultimo = $client->FECompUltimoAutorizado([
-            'Auth' => $auth,
+            'Auth'   => $auth,
             'PtoVta' => $factura->punto_venta,
             'CbteTipo' => $factura->tipo_comprobante === 'A' ? 1 : 6,
         ]);
@@ -150,50 +150,109 @@ class AfipService
         $cbteDesde = $ultimo->FECompUltimoAutorizadoResult->CbteNro + 1;
         $cbteHasta = $cbteDesde;
 
-        // === 4) REDONDEO CORRECTO PRODUCCIÓN ===
+        // === 4) MONEDA ===
+        if ($factura->moneda === 'ARS') {
+            $monId = 'PES';
+            $monCotiz = 1;
+        } else {
+            $monId = 'DOL';
+            $monCotiz = $factura->valor_dolar > 0 ? $factura->valor_dolar : 1;
+        }
+
+        // === 5) RECÁLCULO NETO + IVA ===
         $impNeto = round($factura->importe_total / 1.21, 2);
         $impIVA  = round($factura->importe_total - $impNeto, 2);
 
-        // === 5) TIPOS DOC ===
+        // === 6) TIPO DOC ===
         $docTipo = $factura->cliente->cuit ? 80 : 99;
         $docNro  = $factura->cliente->cuit ?? 0;
 
-        // === 6) ARMADO DE LA FACTURA ===
+        // === 7) CONCEPTO (1 bienes, 2 servicios, 3 ambos) ===
+        $conceptoAFIP = $factura->concepto;
+
+        // === 8) FECHAS PARA SERVICIOS ===
+        $fchServDesde = null;
+        $fchServHasta = null;
+        $fchVtoPago   = null;
+
+        if ($conceptoAFIP == 2 || $conceptoAFIP == 3) {
+            $fchServDesde = $factura->fecha_desde
+                ? date('Ymd', strtotime($factura->fecha_desde))
+                : null;
+
+            $fchServHasta = $factura->fecha_hasta
+                ? date('Ymd', strtotime($factura->fecha_hasta))
+                : null;
+
+            $fchVtoPago = $factura->vencimiento_pago
+                ? date('Ymd', strtotime($factura->vencimiento_pago))
+                : null;
+        }
+
+        // === 9) ARMADO DEL REQUEST ===
         $data = [
             'FeCAEReq' => [
                 'FeCabReq' => [
                     'CantReg' => 1,
-                    'PtoVta' => $factura->punto_venta,
-                    'CbteTipo' => $factura->tipo_comprobante === 'A' ? 1 : 6,
+                    'PtoVta'  => $factura->punto_venta,
+                    'CbteTipo'=> $factura->tipo_comprobante === 'A' ? 1 : 6,
                 ],
                 'FeDetReq' => [
                     'FECAEDetRequest' => [
-                        'Concepto' => 1,
-                        'DocTipo' => $docTipo,
-                        'DocNro'  => $docNro,
+                        'Concepto'  => $conceptoAFIP,
+                        'DocTipo'   => $docTipo,
+                        'DocNro'    => $docNro,
                         'CbteDesde' => $cbteDesde,
                         'CbteHasta' => $cbteHasta,
-                        'CbteFch' => date('Ymd', strtotime($factura->fecha_emision)),
-                        'ImpTotal' => $factura->importe_total,
-                        'ImpTotConc' => 0,
-                        'ImpNeto' => $impNeto,
-                        'ImpIVA'  => $impIVA,
-                        'ImpTrib' => 0,
-                        'ImpOpEx' => 0,
-                        'MonId' => 'PES',
-                        'MonCotiz' => 1,
+                        'CbteFch'   => date('Ymd', strtotime($factura->fecha_emision)),
+                        'ImpTotal'  => $factura->importe_total,
+                        'ImpTotConc'=> 0,
+                        'ImpNeto'   => $impNeto,
+                        'ImpIVA'    => $impIVA,
+                        'ImpTrib'   => 0,
+                        'ImpOpEx'   => 0,
+
+                        // === MONEDA ===
+                        'MonId'     => $monId,
+                        'MonCotiz'  => $monCotiz,
+
+                        // === FECHAS SERVICIOS (solo si aplica) ===
+                        'FchServDesde' => $fchServDesde,
+                        'FchServHasta' => $fchServHasta,
+                        'FchVtoPago'   => $fchVtoPago,
+
+                        // === IVA GENERAL ===
                         'Iva' => [
                             'AlicIva' => [
-                                'Id' => 5,
-                                'BaseImp' => $impNeto,
-                                'Importe' => $impIVA,
+                                'Id'       => 5,
+                                'BaseImp'  => $impNeto,
+                                'Importe'  => $impIVA,
                             ]
-                        ]
+                        ],
+
+                        // ================================
+                        // ✔ ACTIVIDAD ECONÓMICA FIJA
+                        // ================================
+                        'Opcionales' => [
+                            'Opcional' => [
+                                [
+                                    'Id' => 2101,                 // AFIP: Actividad Económica
+                                    'Valor' => '279000',         // Fabricación de equipos eléctricos
+                                ],
+                            ]
+                        ],
+
+                        // ================================
+                        // ✔ CONDICIÓN DE VENTA - SIEMPRE "OTRA"
+                        // ================================
+                        'CondicionVenta' => 99, // 99 = Otros
+
                     ]
                 ]
             ]
         ];
 
+        // === 10) ENVÍO ===
         try {
             $res = $client->FECAESolicitar(['Auth' => $auth] + $data);
 
@@ -215,6 +274,10 @@ class AfipService
         }
     }
 
+
+    // =======================
+    //
+    // =======================
     public function enviarNotaDebito($nota)
     {
         // =======================
