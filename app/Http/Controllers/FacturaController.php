@@ -89,7 +89,12 @@ class FacturaController extends Controller
             'fecha_emision'    => 'required|date',
             'concepto'         => 'required|in:1,2,3',
             'condicion_venta'  => 'required|string|max:100',
-            'valor_dolar' => 'required|numeric|min:0',
+            'valor_dolar'      => 'required|numeric|min:0',
+
+            // Campos adicionales SOLO para Servicios
+            'fecha_desde'      => 'required_if:concepto,2|nullable|date',
+            'fecha_hasta'      => 'required_if:concepto,2|nullable|date',
+            'vencimiento_pago' => 'required_if:concepto,2|nullable|date',
 
             // Ítems
             'items' => 'required|array|min:1',
@@ -126,6 +131,12 @@ class FacturaController extends Controller
             $factura->condicion_venta  = $validated['condicion_venta'];
             $factura->estado           = 'pendiente';
             $factura->creado_por       = Auth::id();
+
+            // NUEVOS CAMPOS DE SERVICIOS
+            $factura->fecha_desde      = $validated['fecha_desde']      ?? null;
+            $factura->fecha_hasta      = $validated['fecha_hasta']      ?? null;
+            $factura->vencimiento_pago = $validated['vencimiento_pago'] ?? null;
+
             $factura->save();
 
             // Guardar ítems
@@ -145,7 +156,6 @@ class FacturaController extends Controller
                 $total += $subtotal;
             }
 
-            // Actualizar total en la factura
             $factura->importe_total = $total;
             $factura->save();
 
@@ -160,6 +170,7 @@ class FacturaController extends Controller
             return back()->with('error', 'Ocurrió un error al guardar la factura: ' . $e->getMessage());
         }
     }
+
 
 
     /**

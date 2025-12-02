@@ -130,6 +130,37 @@
 
 </div>
 {{-- ============================
+     CAMPOS PARA SERVICIOS
+   ============================ --}}
+<div class="row mt-3" id="bloque-servicios" style="display: none;">
+
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="fecha_desde">Fecha Desde</label>
+            <input type="date" name="fecha_desde" id="fecha_desde"
+                   class="form-control" value="{{ old('fecha_desde') }}">
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="fecha_hasta">Fecha Hasta</label>
+            <input type="date" name="fecha_hasta" id="fecha_hasta"
+                   class="form-control" value="{{ old('fecha_hasta') }}">
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="vencimiento_pago">Vencimiento de Pago</label>
+            <input type="date" name="vencimiento_pago" id="vencimiento_pago"
+                   class="form-control" value="{{ old('vencimiento_pago') }}">
+        </div>
+    </div>
+
+</div>
+
+{{-- ============================
      MONEDA / TIPO DE CAMBIO USD
    ============================ --}}
 <div class="row mt-3">
@@ -300,5 +331,6 @@
             })
             .catch(e => alert("Error consultando API"));
     });
+
 
 </script>

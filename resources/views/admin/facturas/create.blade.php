@@ -69,5 +69,42 @@
                 $('.sel2').select2();
             }
         });
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const concepto = document.querySelector('select[name="concepto"]');
+            const bloque   = document.getElementById('bloque-servicios');
+
+            if (!concepto || !bloque) {
+                console.error("No se encontró concepto o bloque-servicios");
+                return;
+            }
+
+            function actualizar() {
+                const v = concepto.value;
+
+                if (v == "2") {
+                    bloque.style.display = "flex"; // se ve lindo con bootstrap
+                } else {
+                    bloque.style.display = "none";
+                }
+            }
+
+            // primera ejecución
+            actualizar();
+
+            // evento normal (por las dudas)
+            concepto.addEventListener('change', actualizar);
+
+            // evento especial de SELECT2
+            if (typeof $ !== "undefined") {
+                $(concepto).on('select2:select', function () {
+                    actualizar();
+                });
+            }
+
+        });
+
     </script>
+
 @stop

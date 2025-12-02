@@ -73,6 +73,27 @@
             <strong>Domicilio:</strong> {{ $factura->cliente->direccion }}
         </div>
 
+        {{-- =============================
+            DATOS DE SERVICIO (si aplica)
+        ============================= --}}
+        @if($factura->concepto == 2 || $factura->concepto == 3)
+            <div class="datos-factura" style="margin-top: 10px; margin-bottom: 15px;">
+                <strong>Período del Servicio:</strong><br>
+
+                <strong>Desde:</strong>
+                {{ $factura->fecha_desde ? \Carbon\Carbon::parse($factura->fecha_desde)->format('d/m/Y') : '-' }}
+                &nbsp;&nbsp;
+
+                <strong>Hasta:</strong>
+                {{ $factura->fecha_hasta ? \Carbon\Carbon::parse($factura->fecha_hasta)->format('d/m/Y') : '-' }}
+                <br>
+
+                <strong>Vencimiento de Pago:</strong>
+                {{ $factura->vencimiento_pago ? \Carbon\Carbon::parse($factura->vencimiento_pago)->format('d/m/Y') : '-' }}
+            </div>
+        @endif
+
+
         <table>
             <thead>
                 <tr>
