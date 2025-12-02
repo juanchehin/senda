@@ -33,11 +33,21 @@
                 <td>{{ $remito->fecha }}</td>
                 <td><span class="badge badge-info">{{ $remito->estado }}</span></td>
                 <td>
-                    <a href="{{ route('remitos.show', $remito->id) }}" class="btn btn-info btn-sm">Ver</a>
-                    <a href="{{ route('remitos.edit', $remito->id) }}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{{ route('remitos.show', $remito->id) }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="{{ route('remitos.edit', $remito->id) }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                   <a href="{{ route('remitos.pdf', $remito->id) }}"
+                        class="btn btn-sm btn-light" target="_blank" title="Descargar PDF">
+                            <i class="fas fa-file-pdf"></i>
+                    </a>
                     <form action="{{ route('remitos.destroy', $remito->id) }}" method="POST" style="display:inline-block;">
                         @csrf @method('DELETE')
-                        <button class="btn btn-danger btn-sm">Eliminar</button>
+                        <button class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </form>
                 </td>
             </tr>

@@ -82,6 +82,9 @@ Route::middleware(['auth', 'role:secretaria|admin|ingeniero'])->group(function()
     Route::post('/remitos/{id}/aprobar', [RemitoController::class, 'aprobar'])
         ->name('remitos.aprobar');
 
+    Route::get('/remitos/{id}/pdf', [RemitoController::class, 'generar_pdf_remito'])
+        ->name('remitos.pdf');
+
 
 });
 

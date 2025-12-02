@@ -104,4 +104,16 @@ class RemitoController extends Controller
 
         return back()->with('success', 'Remito aprobado.');
     }
+
+    public function generar_pdf_remito($id)
+    {
+        $remito = Remito::with('cliente', 'items')->findOrFail($id);
+
+        // PDF
+        $pdf = \PDF::loadView('admin.remitos.pdf', compact('remito'));
+
+        //
+        return $pdf->stream("Remito-{$remito->id}.pdf");
+    }
+
 }
