@@ -208,34 +208,10 @@
     </tr>
     </thead>
 
-    <tbody>
-    {{-- Fila inicial --}}
-    <tr>
-        <td>
-            <input type="text" name="items[0][descripcion]" class="form-control" required>
-        </td>
-        <td>
-            <input type="number" name="items[0][cantidad]" class="form-control item-cantidad" min="1" step="1" required>
-        </td>
-        <td>
-            <input type="number" name="items[0][precio]" class="form-control item-precio" min="0" step="0.01" required>
-        </td>
-        <td>
-            <select name="items[0][iva]" class="form-control item-iva">
-                <option value="0">0% (Exento)</option>
-                <option value="10.5">10,5%</option>
-                <option value="21" selected>21%</option>
-                <option value="27">27%</option>
-            </select>
-        </td>
-        <td>
-            <input type="text" class="form-control item-subtotal" readonly>
-        </td>
-        <td>
-            <button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button>
-        </td>
-    </tr>
+    <tbody id="items-body">
+        {{-- Las filas se cargarán dinámicamente desde JS --}}
     </tbody>
+
 </table>
 
 <button type="button" class="btn btn-primary btn-sm" id="agregar-item">Agregar Ítem</button>
@@ -312,5 +288,78 @@
         });
         document.getElementById('importe_total').value = total.toFixed(2);
     }
+
+    // ============================
+    // RECONSTRUIR ÍTEMS DESDE OLD()
+    // ============================
+    document.addEventListener("DOMContentLoaded", function () {
+
+        let oldItems = @json(old('items'));
+        const tbody = document.getElementById("items-body");
+
+        if (oldItems && Object.keys(oldItems).length > 0) {
+            tbody.innerHTML = "";
+            fila = 0;
+
+            Object.keys(oldItems).forEach(function (index) {
+                let item = oldItems[index];
+
+                let nuevaFila = `
+                    <tr>
+                        <td><input type="text" name="items[${fila}][descripcion]" class="form-control" required value="${item.descripcion}"></td>
+
+                        <td><input type="number" name="items[${fila}][cantidad]" class="form-control item-cantidad" min="1" step="1" required value="${item.cantidad}"></td>
+
+                        <td><input type="number" name="items[${fila}][precio]" class="form-control item-precio" min="0" step="0.01" required value="${item.precio}"></td>
+
+                        <td>
+                            <select name="items[${fila}][iva]" class="form-control item-iva">
+                                <option value="0" ${item.iva == 0 ? 'selected' : ''}>0% (Exento)</option>
+                                <option value="10.5" ${item.iva == 10.5 ? 'selected' : ''}>10,5%</option>
+                                <option value="21" ${item.iva == 21 ? 'selected' : ''}>21%</option>
+                                <option value="27" ${item.iva == 27 ? 'selected' : ''}>27%</option>
+                            </select>
+                        </td>
+
+                        <td><input type="text" class="form-control item-subtotal" readonly></td>
+
+                        <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
+                    </tr>
+                `;
+
+                tbody.insertAdjacentHTML("beforeend", nuevaFila);
+                fila++;
+            });
+
+            recalcular();
+        } else {
+            // Si no hay old(), cargar fila inicial
+            let initial = `
+                <tr>
+                    <td><input type="text" name="items[0][descripcion]" class="form-control" required></td>
+
+                    <td><input type="number" name="items[0][cantidad]" class="form-control item-cantidad" min="1" step="1" required></td>
+
+                    <td><input type="number" name="items[0][precio]" class="form-control item-precio" min="0" step="0.01" required></td>
+
+                    <td>
+                        <select name="items[0][iva]" class="form-control item-iva">
+                            <option value="0">0% (Exento)</option>
+                            <option value="10.5">10,5%</option>
+                            <option value="21" selected>21%</option>
+                            <option value="27">27%</option>
+                        </select>
+                    </td>
+
+                    <td><input type="text" class="form-control item-subtotal" readonly></td>
+
+                    <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
+                </tr>
+            `;
+
+            tbody.innerHTML = initial;
+        }
+    });
+
 
 </script>
