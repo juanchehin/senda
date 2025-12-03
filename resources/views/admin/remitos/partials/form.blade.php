@@ -115,7 +115,7 @@
         @else
             <tr>
                 <td>
-                    <input type="text" name="items[0][articulo]" class="form-control" value="1.1" required>
+                    <input type="text" name="items[0][articulo]" class="form-control campo-articulo" required>
                 </td>
                 <td>
                     <input type="text" name="items[0][descripcion]" class="form-control" required>
@@ -127,6 +127,7 @@
                     <button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button>
                 </td>
             </tr>
+
         @endif
     </tbody>
 </table>
@@ -134,29 +135,59 @@
 <button type="button" class="btn btn-primary btn-sm" id="agregar-item">Agregar Ítem</button>
 
 <script>
-let fila = {{ $i ?? 1 }};
-let grupo = 1;
 
+function renumerarItems() {
+    let filas = document.querySelectorAll('#tabla-items tbody tr');
+
+    filas.forEach((tr, index) => {
+        let numero = index + 1;
+
+        // Artículo = 1.1, 1.2, 1.3 ...
+        tr.querySelector('.campo-articulo').value = "1." + numero;
+
+        // Reordenar names correctamente
+        tr.querySelectorAll('input').forEach(input => {
+            let name = input.getAttribute('name');
+            let nuevoNombre = name.replace(/items\[\d+\]/, `items[${index}]`);
+            input.setAttribute('name', nuevoNombre);
+        });
+    });
+}
+
+// AGREGAR ITEM
 document.getElementById('agregar-item').addEventListener('click', function () {
-
-    let articulo = "1." + (fila + 1);
 
     let nuevaFila = `
         <tr>
-            <td><input type="text" name="items[${fila}][articulo]" class="form-control" value="${articulo}" required></td>
-            <td><input type="text" name="items[${fila}][descripcion]" class="form-control" required></td>
-            <td><input type="number" name="items[${fila}][cantidad]" class="form-control" min="1" required></td>
-            <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
+            <td>
+                <input type="text" name="items[][articulo]" class="form-control campo-articulo" required>
+            </td>
+            <td>
+                <input type="text" name="items[][descripcion]" class="form-control" required>
+            </td>
+            <td>
+                <input type="number" name="items[][cantidad]" class="form-control" min="1" required>
+            </td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button>
+            </td>
         </tr>
     `;
 
     document.querySelector('#tabla-items tbody').insertAdjacentHTML('beforeend', nuevaFila);
-    fila++;
+    renumerarItems();
 });
 
+// ELIMINAR ITEM
 document.addEventListener('click', function(e) {
     if (e.target.matches('.eliminar-item')) {
         e.target.closest('tr').remove();
+        renumerarItems();
     }
 });
+
+// NUMERAR AL CARGAR
+renumerarItems();
+
 </script>
+
