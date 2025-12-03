@@ -29,6 +29,123 @@
 </div>
 
 {{-- ============================
+     MONEDA / TIPO DE CAMBIO USD
+   ============================ --}}
+<div class="row mt-3">
+
+    {{-- Moneda --}}
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="moneda">Moneda</label>
+            <select name="moneda" id="moneda" class="form-control" required>
+                <option value="ARS" {{ old('moneda') == 'ARS' ? 'selected' : '' }}>ARS (Pesos)</option>
+                <option value="USD" {{ old('moneda') == 'USD' ? 'selected' : '' }}>USD (Dólares)</option>
+            </select>
+        </div>
+    </div>
+
+    {{-- Tipo de cambio + botón refrescar --}}
+    <div class="col-md-4">
+        <label for="valor_dolar">Tipo de Cambio (USD)</label>
+        <div class="input-group">
+            <input type="number" step="0.01" name="valor_dolar" id="valor_dolar"
+                   class="form-control" value="{{ old('valor_dolar', 1) }}" required>
+
+        </div>
+        <small class="text-muted">Chequear valor en <a href="https://www.bna.com.ar/Personas">BNA</a></small>
+    </div>
+
+</div>
+
+{{-- ============================
+     CONCEPTO / CONDICIÓN DE VENTA
+   ============================ --}}
+<div class="row">
+
+    {{-- Concepto --}}
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="concepto">Concepto</label>
+            <select name="concepto" id="concepto" class="form-control" required>
+                <option value="">Seleccione...</option>
+                <option value="1" {{ old('concepto') == 1 ? 'selected' : '' }}>Productos (Bienes)</option>
+                <option value="2" {{ old('concepto') == 2 ? 'selected' : '' }}>Servicios</option>
+                <option value="3" {{ old('concepto') == 3 ? 'selected' : '' }}>Ambos</option>
+            </select>
+        </div>
+    </div>
+
+    {{-- Condición de Venta --}}
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="condicion_venta">Condición de Venta</label>
+            <input type="text" class="form-control" value="otra" disabled>
+
+            <input type="hidden" name="condicion_venta" value="otra">
+        </div>
+    </div>
+
+
+</div>
+
+
+{{-- ============================
+     CAMPOS PARA SERVICIOS
+   ============================ --}}
+<div class="row mt-3" id="bloque-servicios" style="display: none;">
+
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="fecha_desde">Fecha Desde</label>
+            <input type="date" name="fecha_desde" id="fecha_desde"
+                   class="form-control" value="{{ old('fecha_desde') }}">
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="fecha_hasta">Fecha Hasta</label>
+            <input type="date" name="fecha_hasta" id="fecha_hasta"
+                   class="form-control" value="{{ old('fecha_hasta') }}">
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="vencimiento_pago">Vencimiento de Pago</label>
+            <input type="date" name="vencimiento_pago" id="vencimiento_pago"
+                   class="form-control" value="{{ old('vencimiento_pago') }}">
+        </div>
+    </div>
+
+</div>
+
+
+{{-- ============================
+     REMITOS ASOCIADOS
+   ============================ --}}
+<h4 class="mt-4">Remitos Asociados</h4>
+
+<table class="table table-bordered" id="tabla-remitos">
+    <thead>
+    <tr>
+        <th style="width: 150px;">Pto. Venta</th>
+        <th style="width: 180px;">Comprobante</th>
+        <th style="width: 180px;">Fecha Emisión</th>
+        <th style="width: 60px;"></th>
+    </tr>
+    </thead>
+
+    <tbody id="remitos-body">
+        {{-- Se cargarán dinámicamente desde JS --}}
+    </tbody>
+</table>
+
+<button type="button" class="btn btn-secondary btn-sm" id="agregar-remito">Agregar Remito</button>
+
+
+
+{{-- ============================
      DATOS DEL CLIENTE
    ============================ --}}
 <h4 class="mt-4">Datos del Cliente</h4>
@@ -96,95 +213,6 @@
 
 </div>
 
-{{-- ============================
-     CONCEPTO / CONDICIÓN DE VENTA
-   ============================ --}}
-<div class="row">
-
-    {{-- Concepto --}}
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="concepto">Concepto</label>
-            <select name="concepto" id="concepto" class="form-control" required>
-                <option value="">Seleccione...</option>
-                <option value="1" {{ old('concepto') == 1 ? 'selected' : '' }}>Productos (Bienes)</option>
-                <option value="2" {{ old('concepto') == 2 ? 'selected' : '' }}>Servicios</option>
-                <option value="3" {{ old('concepto') == 3 ? 'selected' : '' }}>Ambos</option>
-            </select>
-        </div>
-    </div>
-
-    {{-- Condición de Venta --}}
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="condicion_venta">Condición de Venta</label>
-            <input type="text" class="form-control" value="otra" disabled>
-
-            <input type="hidden" name="condicion_venta" value="otra">
-        </div>
-    </div>
-
-
-</div>
-{{-- ============================
-     CAMPOS PARA SERVICIOS
-   ============================ --}}
-<div class="row mt-3" id="bloque-servicios" style="display: none;">
-
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="fecha_desde">Fecha Desde</label>
-            <input type="date" name="fecha_desde" id="fecha_desde"
-                   class="form-control" value="{{ old('fecha_desde') }}">
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="fecha_hasta">Fecha Hasta</label>
-            <input type="date" name="fecha_hasta" id="fecha_hasta"
-                   class="form-control" value="{{ old('fecha_hasta') }}">
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="vencimiento_pago">Vencimiento de Pago</label>
-            <input type="date" name="vencimiento_pago" id="vencimiento_pago"
-                   class="form-control" value="{{ old('vencimiento_pago') }}">
-        </div>
-    </div>
-
-</div>
-
-{{-- ============================
-     MONEDA / TIPO DE CAMBIO USD
-   ============================ --}}
-<div class="row mt-3">
-
-    {{-- Moneda --}}
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="moneda">Moneda</label>
-            <select name="moneda" id="moneda" class="form-control" required>
-                <option value="ARS" {{ old('moneda') == 'ARS' ? 'selected' : '' }}>ARS (Pesos)</option>
-                <option value="USD" {{ old('moneda') == 'USD' ? 'selected' : '' }}>USD (Dólares)</option>
-            </select>
-        </div>
-    </div>
-
-    {{-- Tipo de cambio + botón refrescar --}}
-    <div class="col-md-4">
-        <label for="valor_dolar">Tipo de Cambio (USD)</label>
-        <div class="input-group">
-            <input type="number" step="0.01" name="valor_dolar" id="valor_dolar"
-                   class="form-control" value="{{ old('valor_dolar', 1) }}" required>
-
-        </div>
-        <small class="text-muted">Chequear valor en <a href="https://www.bna.com.ar/Personas">BNA</a></small>
-    </div>
-
-</div>
 
 
 {{-- ============================
@@ -212,29 +240,6 @@
 </table>
 
 <button type="button" class="btn btn-primary btn-sm" id="agregar-item">Agregar Ítem</button>
-
-{{-- ============================
-     REMITOS ASOCIADOS
-   ============================ --}}
-<h4 class="mt-4">Remitos Asociados</h4>
-
-<table class="table table-bordered" id="tabla-remitos">
-    <thead>
-    <tr>
-        <th style="width: 150px;">Pto. Venta</th>
-        <th style="width: 180px;">Comprobante</th>
-        <th style="width: 180px;">Fecha Emisión</th>
-        <th style="width: 60px;"></th>
-    </tr>
-    </thead>
-
-    <tbody id="remitos-body">
-        {{-- Se cargarán dinámicamente desde JS --}}
-    </tbody>
-</table>
-
-<button type="button" class="btn btn-secondary btn-sm" id="agregar-remito">Agregar Remito</button>
-
 
 {{-- ============================
      IMPORTE TOTAL
