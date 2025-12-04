@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Recibo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Elibyy\TCPDF\Facades\TCPDF;
 
 class ReciboController extends Controller
 {
@@ -130,16 +131,44 @@ class ReciboController extends Controller
         return back()->with('info', 'Función de aprobación aún no implementada en la base de datos.');
     }
 
-    /**
-     * Generar PDF de un recibo
-     */
+
     public function generar_pdf_recibo(Recibo $recibo)
-    {
-        // Si más adelante el recibo tiene relaciones, podés cargarlas acá con load()
+{
+    $pdf = new TCPDF();
 
-        $pdf = \PDF::loadView('admin.recibos.pdf', compact('recibo'));
+    $pdf::SetTitle('Recibo ' . $recibo->nro_recibo);
 
-        // Usamos id_recibo porque es tu PK real
-        return $pdf->stream("Recibo-{$recibo->id_recibo}.pdf");
-    }
+    // Sin márgenes
+    $pdf::SetMargins(0, 0, 0);
+    $pdf::SetAutoPageBreak(false, 0);
+
+    $pdf::AddPage();
+
+    // Ruta de la imagen base
+    $imagePath = public_path('assets/img/recibo_base.png');
+
+    // Insertar imagen base
+    $pdf::Image($imagePath, 0, 0, 210, 297, 'PNG');
+
+    /**
+     * 1️⃣ TAPAR EL NÚMERO ORIGINAL DE LA PLANTILLA
+     * Dibujamos un rectángulo blanco sobre el número impreso en la imagen
+     * (Ajustar ancho/alto si lo necesitás)
+     */
+    $pdf::SetFillColor(255, 255, 255); // blanco
+    $pdf::Rect(128, 23, 50, 12, 'F'); // X, Y, ANCHO, ALTO
+
+    /**
+     * 2️⃣ ESCRIBIR EL NÚMERO NUEVO ENCIMA
+     */
+    $pdf::SetFont('helvetica', 'B', 23);
+    $pdf::SetTextColor(0, 0, 0); // negro
+
+    $pdf::SetXY(130, 25);
+    $pdf::Write(0, $recibo->nro_recibo);
+
+    return response($pdf::Output('recibo.pdf', 'S'))
+            ->header('Content-Type', 'application/pdf');
+}
+
 }

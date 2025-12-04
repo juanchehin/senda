@@ -82,7 +82,7 @@ Route::middleware(['auth', 'role:secretaria|admin|ingeniero'])->group(function()
     Route::post('/recibos/{id}/aprobar', [ReciboController::class, 'aprobar'])
         ->name('recibos.aprobar');
 
-    Route::get('/recibos/{id}/pdf', [ReciboController::class, 'generar_pdf_recibo'])
+    Route::get('/recibos/{recibo}/pdf', [ReciboController::class, 'generar_pdf_recibo'])
         ->name('recibos.pdf');
 
 
