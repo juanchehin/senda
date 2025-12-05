@@ -19,7 +19,7 @@
     {{-- Fecha de Recibo --}}
     <div class="col-md-4">
         <div class="form-group">
-            <label for="fecha_emision">Fecha Remito</label>
+            <label for="fecha_emision">Fecha Facturacion</label>
             <input type="date" name="fecha_emision" id="fecha_emision"
                    value="{{ old('fecha_emision', date('Y-m-d')) }}"
                    class="form-control" required>
