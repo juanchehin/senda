@@ -225,7 +225,7 @@
     <thead>
     <tr>
         <th style="width: 70px;">Código</th>
-        <th>Descripción</th>
+        <th>Prod/Serv</th>
         <th style="width: 120px;">Cant.</th>
         <th style="width: 150px;">Precio Unit.</th>
         <th style="width: 150px;">IVA</th>
