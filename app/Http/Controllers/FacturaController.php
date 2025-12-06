@@ -107,6 +107,7 @@ class FacturaController extends Controller
             'items.*.codigo' => 'required',
             'items.*.descripcion' => 'required|string|max:255',
             'items.*.cantidad'    => 'required|numeric|min:1',
+            'items.*.unidad'      => 'required',
             'items.*.precio'      => 'required|numeric|min:0',
             'items.*.iva'         => 'nullable|numeric|min:0',
 
@@ -175,6 +176,7 @@ class FacturaController extends Controller
                     'cantidad'        => $item['cantidad'],
                     'precio_unitario' => $item['precio'],
                     'iva'             => $item['iva'] ?? 0,
+                    'unidad'          => $item['unidad'] ?? null,
                     'subtotal'        => $subtotal,
                 ]);
 

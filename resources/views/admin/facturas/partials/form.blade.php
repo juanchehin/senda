@@ -227,6 +227,7 @@
         <th style="width: 70px;">Código</th>
         <th>Prod/Serv</th>
         <th style="width: 120px;">Cant.</th>
+        <th style="width: 120px;">Unidad</th>
         <th style="width: 150px;">Precio Unit.</th>
         <th style="width: 150px;">IVA</th>
         <th style="width: 120px;">Subtotal</th>
@@ -266,35 +267,102 @@
     document.getElementById('agregar-item').addEventListener('click', function () {
         const tabla = document.querySelector('#tabla-items tbody');
         let nuevaFila = `
-            <tr>
-                <td>
-                    <input type="text"
-                        name="items[${fila}][codigo]"
-                        class="form-control item-codigo"
-                        readonly>
-                </td>
+        <tr>
 
-                <td>
-                    <input type="text"
-                        name="items[${fila}][descripcion]"
-                        class="form-control"
-                        required>
-                </td>
+            <td>
+                <input type="text"
+                    name="items[${fila}][codigo]"
+                    class="form-control item-codigo"
+                    readonly>
+            </td>
 
-                <td><input type="number" name="items[${fila}][cantidad]" class="form-control item-cantidad" min="1" step="1" required></td>
-                <td><input type="number" name="items[${fila}][precio]" class="form-control item-precio" min="0" step="0.01" required></td>
-                <td>
-                    <select name="items[${fila}][iva]" class="form-control item-iva">
-                        <option value="0">0%</option>
-                        <option value="10.5">10,5%</option>
-                        <option value="21" selected>21%</option>
-                        <option value="27">27%</option>
-                    </select>
-                </td>
-                <td><input type="text" class="form-control item-subtotal" readonly></td>
-                <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
-            </tr>
+            <td>
+                <input type="text"
+                    name="items[${fila}][descripcion]"
+                    class="form-control"
+                    required>
+            </td>
+
+            <td>
+                <input type="number"
+                    name="items[${fila}][cantidad]"
+                    class="form-control item-cantidad"
+                    min="1" step="1" required>
+            </td>
+
+            <td>
+                <select name="items[${fila}][unidad]" class="form-control">
+                    <option value="">seleccionar...</option>
+                    <option value="1">kilogramos</option>
+                    <option value="2">metros</option>
+                    <option value="3">metros cuadrados</option>
+                    <option value="4">metros cúbicos</option>
+                    <option value="5">litros</option>
+                    <option value="6">1000 kWh</option>
+                    <option value="7">unidades</option>
+                    <option value="8">pares</option>
+                    <option value="9">docenas</option>
+                    <option value="10">quilates</option>
+                    <option value="11">millares</option>
+                    <option value="14">gramos</option>
+                    <option value="15">milímetros</option>
+                    <option value="16">mm cúbicos</option>
+                    <option value="17">kilómetros</option>
+                    <option value="18">hectolitros</option>
+                    <option value="20">centímetros</option>
+                    <option value="25">jgo. pqt. mazo naipes</option>
+                    <option value="27">cm cúbicos</option>
+                    <option value="29">toneladas</option>
+                    <option value="30">dam cúbicos</option>
+                    <option value="31">hm cúbicos</option>
+                    <option value="32">km cúbicos</option>
+                    <option value="33">microgramos</option>
+                    <option value="34">nanogramos</option>
+                    <option value="35">picogramos</option>
+                    <option value="41">miligramos</option>
+                    <option value="47">mililitros</option>
+                    <option value="48">curie</option>
+                    <option value="49">milicurie</option>
+                    <option value="50">microcurie</option>
+                    <option value="51">uiacthor</option>
+                    <option value="52">muiacthor</option>
+                    <option value="53">kg base</option>
+                    <option value="54">gruesa</option>
+                    <option value="61">kg bruto</option>
+                    <option value="62">uiactant</option>
+                    <option value="63">muiactant</option>
+                    <option value="64">uiactig</option>
+                    <option value="65">muiactig</option>
+                    <option value="66">kg activo</option>
+                    <option value="67">gramo activo</option>
+                    <option value="68">gramo base</option>
+                    <option value="96">packs</option>
+                    <option value="98">otras unidades</option>
+                </select>
+            </td>
+
+            <td>
+                <input type="number"
+                    name="items[${fila}][precio]"
+                    class="form-control item-precio"
+                    min="0" step="0.01" required>
+            </td>
+
+            <td>
+                <select name="items[${fila}][iva]" class="form-control item-iva">
+                    <option value="0">0%</option>
+                    <option value="10.5">10,5%</option>
+                    <option value="21" selected>21%</option>
+                    <option value="27">27%</option>
+                </select>
+            </td>
+
+            <td><input type="text" class="form-control item-subtotal" readonly></td>
+
+            <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
+        </tr>
         `;
+
         tabla.insertAdjacentHTML('beforeend', nuevaFila);
         fila++;
         actualizarCodigos();
@@ -377,6 +445,60 @@
                                 value="${item.cantidad}">
                         </td>
 
+                        <!-- Unidad (NUEVO CAMPO SOPORTANDO old()) -->
+                        <td>
+                            <select name="items[${fila}][unidad]" class="form-control">
+
+                                <option value=""     ${item.unidad == ""  ? "selected" : ""}>seleccionar...</option>
+                                <option value="1"    ${item.unidad == 1   ? "selected" : ""}>kilogramos</option>
+                                <option value="2"    ${item.unidad == 2   ? "selected" : ""}>metros</option>
+                                <option value="3"    ${item.unidad == 3   ? "selected" : ""}>metros cuadrados</option>
+                                <option value="4"    ${item.unidad == 4   ? "selected" : ""}>metros cúbicos</option>
+                                <option value="5"    ${item.unidad == 5   ? "selected" : ""}>litros</option>
+                                <option value="6"    ${item.unidad == 6   ? "selected" : ""}>1000 kWh</option>
+                                <option value="7"    ${item.unidad == 7   ? "selected" : ""}>unidades</option>
+                                <option value="8"    ${item.unidad == 8   ? "selected" : ""}>pares</option>
+                                <option value="9"    ${item.unidad == 9   ? "selected" : ""}>docenas</option>
+                                <option value="10"   ${item.unidad == 10  ? "selected" : ""}>quilates</option>
+                                <option value="11"   ${item.unidad == 11  ? "selected" : ""}>millares</option>
+                                <option value="14"   ${item.unidad == 14  ? "selected" : ""}>gramos</option>
+                                <option value="15"   ${item.unidad == 15  ? "selected" : ""}>milímetros</option>
+                                <option value="16"   ${item.unidad == 16  ? "selected" : ""}>mm cúbicos</option>
+                                <option value="17"   ${item.unidad == 17  ? "selected" : ""}>kilómetros</option>
+                                <option value="18"   ${item.unidad == 18  ? "selected" : ""}>hectolitros</option>
+                                <option value="20"   ${item.unidad == 20  ? "selected" : ""}>centímetros</option>
+                                <option value="25"   ${item.unidad == 25  ? "selected" : ""}>jgo. pqt. mazo naipes</option>
+                                <option value="27"   ${item.unidad == 27  ? "selected" : ""}>cm cúbicos</option>
+                                <option value="29"   ${item.unidad == 29  ? "selected" : ""}>toneladas</option>
+                                <option value="30"   ${item.unidad == 30  ? "selected" : ""}>dam cúbicos</option>
+                                <option value="31"   ${item.unidad == 31  ? "selected" : ""}>hm cúbicos</option>
+                                <option value="32"   ${item.unidad == 32  ? "selected" : ""}>km cúbicos</option>
+                                <option value="33"   ${item.unidad == 33  ? "selected" : ""}>microgramos</option>
+                                <option value="34"   ${item.unidad == 34  ? "selected" : ""}>nanogramos</option>
+                                <option value="35"   ${item.unidad == 35  ? "selected" : ""}>picogramos</option>
+                                <option value="41"   ${item.unidad == 41  ? "selected" : ""}>miligramos</option>
+                                <option value="47"   ${item.unidad == 47  ? "selected" : ""}>mililitros</option>
+                                <option value="48"   ${item.unidad == 48  ? "selected" : ""}>curie</option>
+                                <option value="49"   ${item.unidad == 49  ? "selected" : ""}>milicurie</option>
+                                <option value="50"   ${item.unidad == 50  ? "selected" : ""}>microcurie</option>
+                                <option value="51"   ${item.unidad == 51  ? "selected" : ""}>uiacthor</option>
+                                <option value="52"   ${item.unidad == 52  ? "selected" : ""}>muiacthor</option>
+                                <option value="53"   ${item.unidad == 53  ? "selected" : ""}>kg base</option>
+                                <option value="54"   ${item.unidad == 54  ? "selected" : ""}>gruesa</option>
+                                <option value="61"   ${item.unidad == 61  ? "selected" : ""}>kg bruto</option>
+                                <option value="62"   ${item.unidad == 62  ? "selected" : ""}>uiactant</option>
+                                <option value="63"   ${item.unidad == 63  ? "selected" : ""}>muiactant</option>
+                                <option value="64"   ${item.unidad == 64  ? "selected" : ""}>uiactig</option>
+                                <option value="65"   ${item.unidad == 65  ? "selected" : ""}>muiactig</option>
+                                <option value="66"   ${item.unidad == 66  ? "selected" : ""}>kg activo</option>
+                                <option value="67"   ${item.unidad == 67  ? "selected" : ""}>gramo activo</option>
+                                <option value="68"   ${item.unidad == 68  ? "selected" : ""}>gramo base</option>
+                                <option value="96"   ${item.unidad == 96  ? "selected" : ""}>packs</option>
+                                <option value="98"   ${item.unidad == 98  ? "selected" : ""}>otras unidades</option>
+
+                            </select>
+                        </td>
+
                         <!-- Precio -->
                         <td>
                             <input type="number"
@@ -386,6 +508,7 @@
                                 required
                                 value="${item.precio}">
                         </td>
+
 
                         <!-- IVA -->
                         <td>
@@ -427,35 +550,106 @@
 
             // Si no hay old(), fila inicial
             let initial = `
-                <tr>
+<tr>
 
-                    <td>
-                        <input type="text"
-                            name="items[0][codigo]"
-                            class="form-control item-codigo"
-                            readonly>
-                    </td>
+    <td>
+        <input type="text"
+            name="items[0][codigo]"
+            class="form-control item-codigo"
+            readonly>
+    </td>
 
-                    <td><input type="text" name="items[0][descripcion]" class="form-control" required></td>
+    <td>
+        <input type="text"
+            name="items[0][descripcion]"
+            class="form-control"
+            required>
+    </td>
 
-                    <td><input type="number" name="items[0][cantidad]" class="form-control item-cantidad" min="1" step="1" required></td>
+    <td>
+        <input type="number"
+            name="items[0][cantidad]"
+            class="form-control item-cantidad"
+            min="1" step="1"
+            required>
+    </td>
 
-                    <td><input type="number" name="items[0][precio]" class="form-control item-precio" min="0" step="0.01" required></td>
+    <td>
+        <select name="items[0][unidad]" class="form-control">
+            <option value="">seleccionar...</option>
+            <option value="1">kilogramos</option>
+            <option value="2">metros</option>
+            <option value="3">metros cuadrados</option>
+            <option value="4">metros cúbicos</option>
+            <option value="5">litros</option>
+            <option value="6">1000 kWh</option>
+            <option value="7">unidades</option>
+            <option value="8">pares</option>
+            <option value="9">docenas</option>
+            <option value="10">quilates</option>
+            <option value="11">millares</option>
+            <option value="14">gramos</option>
+            <option value="15">milímetros</option>
+            <option value="16">mm cúbicos</option>
+            <option value="17">kilómetros</option>
+            <option value="18">hectolitros</option>
+            <option value="20">centímetros</option>
+            <option value="25">jgo. pqt. mazo naipes</option>
+            <option value="27">cm cúbicos</option>
+            <option value="29">toneladas</option>
+            <option value="30">dam cúbicos</option>
+            <option value="31">hm cúbicos</option>
+            <option value="32">km cúbicos</option>
+            <option value="33">microgramos</option>
+            <option value="34">nanogramos</option>
+            <option value="35">picogramos</option>
+            <option value="41">miligramos</option>
+            <option value="47">mililitros</option>
+            <option value="48">curie</option>
+            <option value="49">milicurie</option>
+            <option value="50">microcurie</option>
+            <option value="51">uiacthor</option>
+            <option value="52">muiacthor</option>
+            <option value="53">kg base</option>
+            <option value="54">gruesa</option>
+            <option value="61">kg bruto</option>
+            <option value="62">uiactant</option>
+            <option value="63">muiactant</option>
+            <option value="64">uiactig</option>
+            <option value="65">muiactig</option>
+            <option value="66">kg activo</option>
+            <option value="67">gramo activo</option>
+            <option value="68">gramo base</option>
+            <option value="96">packs</option>
+            <option value="98">otras unidades</option>
+        </select>
+    </td>
 
-                    <td>
-                        <select name="items[0][iva]" class="form-control item-iva">
-                            <option value="0">0% (Exento)</option>
-                            <option value="10.5">10,5%</option>
-                            <option value="21" selected>21%</option>
-                            <option value="27">27%</option>
-                        </select>
-                    </td>
+    <td>
+        <input type="number"
+            name="items[0][precio]"
+            class="form-control item-precio"
+            min="0" step="0.01"
+            required>
+    </td>
 
-                    <td><input type="text" class="form-control item-subtotal" readonly></td>
+    <td>
+        <select name="items[0][iva]" class="form-control item-iva">
+            <option value="0">0% (Exento)</option>
+            <option value="10.5">10,5%</option>
+            <option value="21" selected>21%</option>
+            <option value="27">27%</option>
+        </select>
+    </td>
 
-                    <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
-                </tr>
-            `;
+    <td><input type="text" class="form-control item-subtotal" readonly></td>
+
+    <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
+
+</tr>
+`;
+
+
 
             tbody.innerHTML = initial;
 

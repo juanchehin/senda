@@ -16,6 +16,7 @@ class FacturaItem extends Model
         'cantidad',
         'precio_unitario',
         'iva',
+        'unidad',
         'subtotal',
     ];
 
