@@ -229,7 +229,7 @@
         <th style="width: 120px;">Cant.</th>
         <th style="width: 120px;">Unidad</th>
         <th style="width: 150px;">Precio Unit.</th>
-        <th style="width: 150px;">IVA</th>
+        <th style="width: 150px;">Alicuota IVA</th>
         <th style="width: 120px;">Subtotal</th>
         <th style="width: 60px;"></th>
     </tr>
