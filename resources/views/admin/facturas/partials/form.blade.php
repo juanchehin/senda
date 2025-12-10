@@ -52,7 +52,7 @@
                    class="form-control" value="{{ old('valor_dolar', 1) }}" required>
 
         </div>
-        <small class="text-muted">Chequear valor en <a href="https://www.bna.com.ar/Personas">BNA</a></small>
+        <small class="text-muted">Chequear valor en <a href="https://www.bna.com.ar/Personas" target="_blank">BNA</a></small>
     </div>
 
 </div>
@@ -141,7 +141,7 @@
     </tbody>
 </table>
 
-<button type="button" class="btn btn-secondary btn-sm" id="agregar-remito">Agregar Recibo</button>
+<button type="button" class="btn btn-secondary btn-sm" id="agregar-remito">Agregar Remito</button>
 
 
 
