@@ -419,10 +419,17 @@
 
             <td>
                 <select name="items[${fila}][iva]" class="form-control item-iva">
-                    <option value="0">0%</option>
-                    <option value="10.5">10,5%</option>
-                    <option value="21" selected>21%</option>
-                    <option value="27">27%</option>
+
+                    <option value="no gravado" ${item.iva == 'no gravado' ? 'selected' : ''}>No Gravado</option>
+                    <option value="exento" ${item.iva == 'exento' ? 'selected' : ''}>Exento</option>
+
+                    <option value="0" ${item.iva == 0 ? 'selected' : ''}>0%</option>
+                    <option value="2.5" ${item.iva == 2.5 ? 'selected' : ''}>2,5%</option>
+                    <option value="5" ${item.iva == 5 ? 'selected' : ''}>5%</option>
+                    <option value="10.5" ${item.iva == 10.5 ? 'selected' : ''}>10,5%</option>
+                    <option value="21" ${item.iva == 21 ? 'selected' : ''}>21%</option>
+                    <option value="27" ${item.iva == 27 ? 'selected' : ''}>27%</option>
+
                 </select>
             </td>
 
@@ -582,12 +589,20 @@
                         <!-- IVA -->
                         <td>
                             <select name="items[${fila}][iva]" class="form-control item-iva">
-                                <option value="0"    ${item.iva == 0    ? 'selected' : ''}>0% (Exento)</option>
+
+                                <option value="no gravado" ${item.iva == 'no gravado' ? 'selected' : ''}>No Gravado</option>
+                                <option value="exento" ${item.iva == 'exento' ? 'selected' : ''}>Exento</option>
+
+                                <option value="0" ${item.iva == 0 ? 'selected' : ''}>0%</option>
+                                <option value="2.5" ${item.iva == 2.5 ? 'selected' : ''}>2,5%</option>
+                                <option value="5" ${item.iva == 5 ? 'selected' : ''}>5%</option>
                                 <option value="10.5" ${item.iva == 10.5 ? 'selected' : ''}>10,5%</option>
-                                <option value="21"   ${item.iva == 21   ? 'selected' : ''}>21%</option>
-                                <option value="27"   ${item.iva == 27   ? 'selected' : ''}>27%</option>
+                                <option value="21" ${item.iva == 21 ? 'selected' : ''}>21%</option>
+                                <option value="27" ${item.iva == 27 ? 'selected' : ''}>27%</option>
+
                             </select>
                         </td>
+
 
                         <!-- Subtotal -->
                         <td>
@@ -704,12 +719,20 @@
 
     <td>
         <select name="items[0][iva]" class="form-control item-iva">
-            <option value="0">0% (Exento)</option>
+
+            <option value="no gravado">No Gravado</option>
+            <option value="exento">Exento</option>
+
+            <option value="0">0%</option>
+            <option value="2.5">2,5%</option>
+            <option value="5">5%</option>
             <option value="10.5">10,5%</option>
             <option value="21" selected>21%</option>
             <option value="27">27%</option>
+
         </select>
     </td>
+
 
     <td><input type="text" class="form-control item-subtotal" readonly></td>
 
