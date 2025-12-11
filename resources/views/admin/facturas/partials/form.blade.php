@@ -1,6 +1,9 @@
+<h3>Datos del Emisor</h3>
+
 {{-- ============================
      DATOS DEL COMPROBANTE
    ============================ --}}
+
 <div class="row">
 
     {{-- Tipo de Comprobante --}}
@@ -144,6 +147,7 @@
 <button type="button" class="btn btn-secondary btn-sm" id="agregar-remito">Agregar Remito</button>
 
 
+<h3>Datos del Receptor</h3>
 
 {{-- ============================
      DATOS DEL CLIENTE
@@ -214,6 +218,7 @@
 </div>
 
 
+<h3>Datos de la operacion</h3>
 
 {{-- ============================
      ÍTEMS / SERVICIOS DETALLADOS
