@@ -228,23 +228,22 @@
 
 <table class="table table-bordered" id="tabla-items">
     <thead>
-    <tr>
-        <th style="width: 70px;">Código</th>
-        <th>Prod/Serv</th>
-        <th style="width: 120px;">Cant.</th>
-        <th style="width: 120px;">Unidad</th>
-        <th style="width: 150px;">Precio Unit.</th>
-        <th style="width: 150px;">Alicuota IVA</th>
-        <th style="width: 120px;">Subtotal c/IVA</th>
-        <th style="width: 60px;"></th>
-    </tr>
+        <tr>
+            <th style="width: 100px;">Código</th>
+            <th>Descripción</th>
+            <th style="width: 120px;">Cant.</th>
+            <th style="width: 140px;">Unidad</th>
+            <th style="width: 150px;">Precio Unit.</th>
+            <th style="width: 120px;">IVA (%)</th>
+            <th style="width: 120px;">% Bonif.</th>
+            <th style="width: 150px;">Subtotal c/IVA</th>
+            <th style="width: 40px;"></th>
+        </tr>
     </thead>
 
-
     <tbody id="items-body">
-        {{-- Las filas se cargarán dinámicamente desde JS --}}
+        <!-- Se cargan dinámicamente -->
     </tbody>
-
 </table>
 
 <button type="button" class="btn btn-primary btn-sm" id="agregar-item">Agregar Ítem</button>
@@ -253,34 +252,6 @@
      BONIFICACIONES / PERCEPCIONES
    ============================ --}}
 <div class="row mt-3">
-
-    {{-- % Bonificación --}}
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="porcentaje_bonificacion">% Bonificación</label>
-            <input type="number"
-                   name="porcentaje_bonificacion"
-                   id="porcentaje_bonificacion"
-                   class="form-control"
-                   step="0.01"
-                   placeholder="Ej: 10"
-                   value="{{ old('porcentaje_bonificacion') }}">
-        </div>
-    </div>
-
-    {{-- Importe Bonificación --}}
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="importe_bonificacion">Importe Bonificación</label>
-            <input type="number"
-                   name="importe_bonificacion"
-                   id="importe_bonificacion"
-                   class="form-control"
-                   step="0.01"
-                   placeholder="0.00"
-                   value="{{ old('importe_bonificacion') }}">
-        </div>
-    </div>
 
     {{-- Percepción de IVA --}}
     <div class="col-md-3">
@@ -325,549 +296,289 @@
         </div>
     </div>
 </div>
-
-{{-- ============================
-     SCRIPTS JS PARA ÍTEMS
-   ============================ --}}
 <script>
-    let fila = 1;
+let fila = 0;
 
-    // Agregar fila
-    document.getElementById('agregar-item').addEventListener('click', function () {
-        const tabla = document.querySelector('#tabla-items tbody');
-        let nuevaFila = `
-        <tr>
+/* ============================================================
+   AGREGAR NUEVA FILA DE ÍTEM
+   ============================================================ */
+document.getElementById('agregar-item').addEventListener('click', function () {
 
+    const tbody = document.getElementById('items-body');
+
+    let nuevaFila = `
+        <tr data-index="${fila}">
+
+            <!-- Código autogenerado -->
             <td>
-                <input type="text"
-                    name="items[${fila}][codigo]"
-                    class="form-control item-codigo"
-                    readonly>
+                <input type="text" name="items[${fila}][codigo]"
+                       class="form-control item-codigo" readonly>
             </td>
 
+            <!-- Descripción -->
             <td>
-                <input type="text"
-                    name="items[${fila}][descripcion]"
-                    class="form-control"
-                    required>
+                <input type="text" name="items[${fila}][descripcion]"
+                       class="form-control item-desc" required>
             </td>
 
+            <!-- Cantidad -->
             <td>
-                <input type="number"
-                    name="items[${fila}][cantidad]"
-                    class="form-control item-cantidad"
-                    min="1" step="1" required>
+                <input type="number" name="items[${fila}][cantidad]"
+                       class="form-control item-cantidad"
+                       min="1" step="0.01" required>
             </td>
 
+            <!-- Unidad -->
             <td>
-                <select name="items[${fila}][unidad]" class="form-control">
-                    <option value="">seleccionar...</option>
-                    <option value="1">kilogramos</option>
-                    <option value="2">metros</option>
-                    <option value="3">metros cuadrados</option>
-                    <option value="4">metros cúbicos</option>
-                    <option value="5">litros</option>
-                    <option value="6">1000 kWh</option>
-                    <option value="7">unidades</option>
-                    <option value="8">pares</option>
-                    <option value="9">docenas</option>
-                    <option value="10">quilates</option>
-                    <option value="11">millares</option>
-                    <option value="14">gramos</option>
-                    <option value="15">milímetros</option>
-                    <option value="16">mm cúbicos</option>
-                    <option value="17">kilómetros</option>
-                    <option value="18">hectolitros</option>
-                    <option value="20">centímetros</option>
-                    <option value="25">jgo. pqt. mazo naipes</option>
-                    <option value="27">cm cúbicos</option>
-                    <option value="29">toneladas</option>
-                    <option value="30">dam cúbicos</option>
-                    <option value="31">hm cúbicos</option>
-                    <option value="32">km cúbicos</option>
-                    <option value="33">microgramos</option>
-                    <option value="34">nanogramos</option>
-                    <option value="35">picogramos</option>
-                    <option value="41">miligramos</option>
-                    <option value="47">mililitros</option>
-                    <option value="48">curie</option>
-                    <option value="49">milicurie</option>
-                    <option value="50">microcurie</option>
-                    <option value="51">uiacthor</option>
-                    <option value="52">muiacthor</option>
-                    <option value="53">kg base</option>
-                    <option value="54">gruesa</option>
-                    <option value="61">kg bruto</option>
-                    <option value="62">uiactant</option>
-                    <option value="63">muiactant</option>
-                    <option value="64">uiactig</option>
-                    <option value="65">muiactig</option>
-                    <option value="66">kg activo</option>
-                    <option value="67">gramo activo</option>
-                    <option value="68">gramo base</option>
-                    <option value="96">packs</option>
-                    <option value="98">otras unidades</option>
+                <select name="items[${fila}][unidad]" class="form-control item-unidad" required>
+                    <option value="">Sel...</option>
+                    <option value="7">Unidades</option>
+                    <option value="5">Litros</option>
+                    <option value="1">Kilogramos</option>
+                    <option value="2">Metros</option>
                 </select>
             </td>
 
+            <!-- Precio Unitario -->
             <td>
-                <input type="number"
-                    name="items[${fila}][precio]"
-                    class="form-control item-precio"
-                    min="0" step="0.01" required>
+                <input type="number" name="items[${fila}][precio]"
+                       class="form-control item-precio"
+                       min="0" step="0.01" required>
             </td>
 
+            <!-- IVA -->
             <td>
                 <select name="items[${fila}][iva]" class="form-control item-iva">
-
-                    <option value="no gravado" ${item.iva == 'no gravado' ? 'selected' : ''}>No Gravado</option>
-                    <option value="exento" ${item.iva == 'exento' ? 'selected' : ''}>Exento</option>
-
-                    <option value="0" ${item.iva == 0 ? 'selected' : ''}>0%</option>
-                    <option value="2.5" ${item.iva == 2.5 ? 'selected' : ''}>2,5%</option>
-                    <option value="5" ${item.iva == 5 ? 'selected' : ''}>5%</option>
-                    <option value="10.5" ${item.iva == 10.5 ? 'selected' : ''}>10,5%</option>
-                    <option value="21" ${item.iva == 21 ? 'selected' : ''}>21%</option>
-                    <option value="27" ${item.iva == 27 ? 'selected' : ''}>27%</option>
-
+                    <option value="0">No Gravado</option>
+                    <option value="0">Exento</option>
+                    <option value="0">0%</option>
+                    <option value="2.5">2,5%</option>
+                    <option value="5">5%</option>
+                    <option value="10.5">10,5%</option>
+                    <option value="21" selected>21%</option>
+                    <option value="27">27%</option>
                 </select>
             </td>
 
-            <td><input type="text" class="form-control item-subtotal" readonly></td>
+            <!-- % BONIFICACIÓN -->
+            <td>
+                <input type="number" name="items[${fila}][bonificacion_porcentaje]"
+                       class="form-control item-bonif"
+                       min="0" max="100" step="0.01" value="0">
+            </td>
 
-            <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
+            <!-- SUBTOTAL con IVA -->
+            <td>
+                <input type="text" class="form-control item-subtotal" readonly>
+            </td>
+
+            <!-- Eliminar fila -->
+            <td>
+                <button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button>
+            </td>
+
+            <!-- Hidden para backend -->
+            <input type="hidden" name="items[${fila}][bonificacion_importe]"
+                   class="bonif-importe-hidden">
+
+            <input type="hidden" name="items[${fila}][subtotal_sin_iva]"
+                   class="subtotal-sin-iva-hidden">
         </tr>
-        `;
+    `;
 
-        tabla.insertAdjacentHTML('beforeend', nuevaFila);
-        fila++;
+    tbody.insertAdjacentHTML('beforeend', nuevaFila);
+    fila++;
+    actualizarCodigos();
+    reindexarItems();
+
+});
+
+
+/* ============================================================
+   RECALCULAR IMPORTES – SUBTOTAL SIN IVA, IVA, TOTAL
+   ============================================================ */
+function recalcular() {
+
+    let totalFactura = 0;
+
+    document.querySelectorAll('#tabla-items tbody tr').forEach(function (fila) {
+
+        let cantidad = parseFloat(fila.querySelector('.item-cantidad').value) || 0;
+        let precio   = parseFloat(fila.querySelector('.item-precio').value) || 0;
+        let iva      = parseFloat(fila.querySelector('.item-iva').value) || 0;
+        let bonif    = parseFloat(fila.querySelector('.item-bonif').value) || 0;
+
+        // SUBTOTAL BRUTO
+        let subtotal_bruto = cantidad * precio;
+
+        // MONTO BONIFICACIÓN
+        let bonif_importe = subtotal_bruto * (bonif / 100);
+
+        // SUBTOTAL SIN IVA
+        let subtotal_sin_iva = subtotal_bruto - bonif_importe;
+
+        // IVA DEL ÍTEM
+        let iva_importe = subtotal_sin_iva * (iva / 100);
+
+        // SUBTOTAL CON IVA
+        let subtotal_con_iva = subtotal_sin_iva + iva_importe;
+
+        // Mostrar en tabla
+        fila.querySelector('.item-subtotal').value = subtotal_con_iva.toFixed(2);
+
+        // Guardar hidden para Bd
+        fila.querySelector('.subtotal-sin-iva-hidden').value = subtotal_sin_iva.toFixed(2);
+        fila.querySelector('.bonif-importe-hidden').value   = bonif_importe.toFixed(2);
+
+        totalFactura += subtotal_con_iva;
+    });
+
+    // Actualizar total de factura
+    let totalInput = document.getElementById('importe_total');
+    if (totalInput) totalInput.value = totalFactura.toFixed(2);
+}
+
+
+/* ============================================================
+   EVENTOS: RECALCULAR Y ELIMINAR
+   ============================================================ */
+document.addEventListener('input', function (e) {
+    if (
+        e.target.matches('.item-cantidad') ||
+        e.target.matches('.item-precio') ||
+        e.target.matches('.item-iva') ||
+        e.target.matches('.item-bonif')
+    ) {
+        recalcular();
+    }
+});
+
+document.addEventListener('click', function (e) {
+    if (e.target.matches('.eliminar-item')) {
+        e.target.closest('tr').remove();
+        recalcular();
         actualizarCodigos();
-    });
+        reindexarItems();
 
-    // Delegación de eventos
-    document.addEventListener('input', function (e) {
-        if (e.target.matches('.item-cantidad, .item-precio, .item-iva')) {
-            recalcular();
-        }
-    });
-
-    document.addEventListener('click', function (e) {
-        if (e.target.matches('.eliminar-item')) {
-            e.target.closest('tr').remove();
-            recalcular();
-            actualizarCodigos();
-        }
-    });
-
-    // Recalcular subtotales + total
-    function recalcular() {
-        let total = 0;
-        document.querySelectorAll('#tabla-items tbody tr').forEach(function (fila) {
-            let cantidad = parseFloat(fila.querySelector('.item-cantidad').value) || 0;
-            let precio   = parseFloat(fila.querySelector('.item-precio').value) || 0;
-            let iva      = parseFloat(fila.querySelector('.item-iva').value) || 0;
-
-            let subtotal = cantidad * precio * (1 + iva / 100);
-            fila.querySelector('.item-subtotal').value = subtotal.toFixed(2);
-
-            total += subtotal;
-        });
-        document.getElementById('importe_total').value = total.toFixed(2);
     }
-
-//     <!-- ============================
-//      RECONSTRUIR ÍTEMS DESDE OLD()
-//    ============================ -->
-    document.addEventListener("DOMContentLoaded", function () {
-
-        let oldItems = @json(old('items'));
-        const tbody = document.getElementById("items-body");
-
-        if (oldItems && Object.keys(oldItems).length > 0) {
-
-            tbody.innerHTML = "";
-            fila = 0;
-
-            Object.keys(oldItems).forEach(function (index) {
-                let item = oldItems[index];
-
-                let nuevaFila = `
-                    <tr>
-
-                        <!-- Código autogenerado -->
-                        <td>
-                            <input type="text"
-                                name="items[${fila}][codigo]"
-                                class="form-control item-codigo"
-                                readonly>
-                        </td>
-
-                        <!-- Descripción -->
-                        <td>
-                            <input type="text"
-                                name="items[${fila}][descripcion]"
-                                class="form-control"
-                                required
-                                value="${item.descripcion}">
-                        </td>
-
-                        <!-- Cantidad -->
-                        <td>
-                            <input type="number"
-                                name="items[${fila}][cantidad]"
-                                class="form-control item-cantidad"
-                                min="1" step="1"
-                                required
-                                value="${item.cantidad}">
-                        </td>
-
-                        <!-- Unidad (NUEVO CAMPO SOPORTANDO old()) -->
-                        <td>
-                            <select name="items[${fila}][unidad]" class="form-control">
-
-                                <option value=""     ${item.unidad == ""  ? "selected" : ""}>seleccionar...</option>
-                                <option value="1"    ${item.unidad == 1   ? "selected" : ""}>kilogramos</option>
-                                <option value="2"    ${item.unidad == 2   ? "selected" : ""}>metros</option>
-                                <option value="3"    ${item.unidad == 3   ? "selected" : ""}>metros cuadrados</option>
-                                <option value="4"    ${item.unidad == 4   ? "selected" : ""}>metros cúbicos</option>
-                                <option value="5"    ${item.unidad == 5   ? "selected" : ""}>litros</option>
-                                <option value="6"    ${item.unidad == 6   ? "selected" : ""}>1000 kWh</option>
-                                <option value="7"    ${item.unidad == 7   ? "selected" : ""}>unidades</option>
-                                <option value="8"    ${item.unidad == 8   ? "selected" : ""}>pares</option>
-                                <option value="9"    ${item.unidad == 9   ? "selected" : ""}>docenas</option>
-                                <option value="10"   ${item.unidad == 10  ? "selected" : ""}>quilates</option>
-                                <option value="11"   ${item.unidad == 11  ? "selected" : ""}>millares</option>
-                                <option value="14"   ${item.unidad == 14  ? "selected" : ""}>gramos</option>
-                                <option value="15"   ${item.unidad == 15  ? "selected" : ""}>milímetros</option>
-                                <option value="16"   ${item.unidad == 16  ? "selected" : ""}>mm cúbicos</option>
-                                <option value="17"   ${item.unidad == 17  ? "selected" : ""}>kilómetros</option>
-                                <option value="18"   ${item.unidad == 18  ? "selected" : ""}>hectolitros</option>
-                                <option value="20"   ${item.unidad == 20  ? "selected" : ""}>centímetros</option>
-                                <option value="25"   ${item.unidad == 25  ? "selected" : ""}>jgo. pqt. mazo naipes</option>
-                                <option value="27"   ${item.unidad == 27  ? "selected" : ""}>cm cúbicos</option>
-                                <option value="29"   ${item.unidad == 29  ? "selected" : ""}>toneladas</option>
-                                <option value="30"   ${item.unidad == 30  ? "selected" : ""}>dam cúbicos</option>
-                                <option value="31"   ${item.unidad == 31  ? "selected" : ""}>hm cúbicos</option>
-                                <option value="32"   ${item.unidad == 32  ? "selected" : ""}>km cúbicos</option>
-                                <option value="33"   ${item.unidad == 33  ? "selected" : ""}>microgramos</option>
-                                <option value="34"   ${item.unidad == 34  ? "selected" : ""}>nanogramos</option>
-                                <option value="35"   ${item.unidad == 35  ? "selected" : ""}>picogramos</option>
-                                <option value="41"   ${item.unidad == 41  ? "selected" : ""}>miligramos</option>
-                                <option value="47"   ${item.unidad == 47  ? "selected" : ""}>mililitros</option>
-                                <option value="48"   ${item.unidad == 48  ? "selected" : ""}>curie</option>
-                                <option value="49"   ${item.unidad == 49  ? "selected" : ""}>milicurie</option>
-                                <option value="50"   ${item.unidad == 50  ? "selected" : ""}>microcurie</option>
-                                <option value="51"   ${item.unidad == 51  ? "selected" : ""}>uiacthor</option>
-                                <option value="52"   ${item.unidad == 52  ? "selected" : ""}>muiacthor</option>
-                                <option value="53"   ${item.unidad == 53  ? "selected" : ""}>kg base</option>
-                                <option value="54"   ${item.unidad == 54  ? "selected" : ""}>gruesa</option>
-                                <option value="61"   ${item.unidad == 61  ? "selected" : ""}>kg bruto</option>
-                                <option value="62"   ${item.unidad == 62  ? "selected" : ""}>uiactant</option>
-                                <option value="63"   ${item.unidad == 63  ? "selected" : ""}>muiactant</option>
-                                <option value="64"   ${item.unidad == 64  ? "selected" : ""}>uiactig</option>
-                                <option value="65"   ${item.unidad == 65  ? "selected" : ""}>muiactig</option>
-                                <option value="66"   ${item.unidad == 66  ? "selected" : ""}>kg activo</option>
-                                <option value="67"   ${item.unidad == 67  ? "selected" : ""}>gramo activo</option>
-                                <option value="68"   ${item.unidad == 68  ? "selected" : ""}>gramo base</option>
-                                <option value="96"   ${item.unidad == 96  ? "selected" : ""}>packs</option>
-                                <option value="98"   ${item.unidad == 98  ? "selected" : ""}>otras unidades</option>
-
-                            </select>
-                        </td>
-
-                        <!-- Precio -->
-                        <td>
-                            <input type="number"
-                                name="items[${fila}][precio]"
-                                class="form-control item-precio"
-                                min="0" step="0.01"
-                                required
-                                value="${item.precio}">
-                        </td>
+});
 
 
-                        <!-- IVA -->
-                        <td>
-                            <select name="items[${fila}][iva]" class="form-control item-iva">
+/* ============================================================
+   ACTUALIZAR CÓDIGOS DE ÍTEMS = 1.1, 1.2, 1.3...
+   ============================================================ */
+function actualizarCodigos() {
 
-                                <option value="no gravado" ${item.iva == 'no gravado' ? 'selected' : ''}>No Gravado</option>
-                                <option value="exento" ${item.iva == 'exento' ? 'selected' : ''}>Exento</option>
+    let filas = document.querySelectorAll('#tabla-items tbody tr');
+    let grupo = 1;
+    let sub   = 1;
 
-                                <option value="0" ${item.iva == 0 ? 'selected' : ''}>0%</option>
-                                <option value="2.5" ${item.iva == 2.5 ? 'selected' : ''}>2,5%</option>
-                                <option value="5" ${item.iva == 5 ? 'selected' : ''}>5%</option>
-                                <option value="10.5" ${item.iva == 10.5 ? 'selected' : ''}>10,5%</option>
-                                <option value="21" ${item.iva == 21 ? 'selected' : ''}>21%</option>
-                                <option value="27" ${item.iva == 27 ? 'selected' : ''}>27%</option>
-
-                            </select>
-                        </td>
-
-
-                        <!-- Subtotal -->
-                        <td>
-                            <input type="text"
-                                class="form-control item-subtotal"
-                                readonly>
-                        </td>
-
-                        <!-- Eliminar -->
-                        <td>
-                            <button type="button"
-                                    class="btn btn-danger btn-sm eliminar-item">&times;</button>
-                        </td>
-
-                    </tr>
-                `;
-
-                tbody.insertAdjacentHTML("beforeend", nuevaFila);
-                fila++;
-            });
-
-            // Recalcular totales
-            recalcular();
-
-            // Generar códigos 1.1, 1.2, 1.3...
-            actualizarCodigos();
-
-        } else {
-
-            // Si no hay old(), fila inicial
-            let initial = `
-<tr>
-
-    <td>
-        <input type="text"
-            name="items[0][codigo]"
-            class="form-control item-codigo"
-            readonly>
-    </td>
-
-    <td>
-        <input type="text"
-            name="items[0][descripcion]"
-            class="form-control"
-            required>
-    </td>
-
-    <td>
-        <input type="number"
-            name="items[0][cantidad]"
-            class="form-control item-cantidad"
-            min="1" step="1"
-            required>
-    </td>
-
-    <td>
-        <select name="items[0][unidad]" class="form-control">
-            <option value="">seleccionar...</option>
-            <option value="1">kilogramos</option>
-            <option value="2">metros</option>
-            <option value="3">metros cuadrados</option>
-            <option value="4">metros cúbicos</option>
-            <option value="5">litros</option>
-            <option value="6">1000 kWh</option>
-            <option value="7">unidades</option>
-            <option value="8">pares</option>
-            <option value="9">docenas</option>
-            <option value="10">quilates</option>
-            <option value="11">millares</option>
-            <option value="14">gramos</option>
-            <option value="15">milímetros</option>
-            <option value="16">mm cúbicos</option>
-            <option value="17">kilómetros</option>
-            <option value="18">hectolitros</option>
-            <option value="20">centímetros</option>
-            <option value="25">jgo. pqt. mazo naipes</option>
-            <option value="27">cm cúbicos</option>
-            <option value="29">toneladas</option>
-            <option value="30">dam cúbicos</option>
-            <option value="31">hm cúbicos</option>
-            <option value="32">km cúbicos</option>
-            <option value="33">microgramos</option>
-            <option value="34">nanogramos</option>
-            <option value="35">picogramos</option>
-            <option value="41">miligramos</option>
-            <option value="47">mililitros</option>
-            <option value="48">curie</option>
-            <option value="49">milicurie</option>
-            <option value="50">microcurie</option>
-            <option value="51">uiacthor</option>
-            <option value="52">muiacthor</option>
-            <option value="53">kg base</option>
-            <option value="54">gruesa</option>
-            <option value="61">kg bruto</option>
-            <option value="62">uiactant</option>
-            <option value="63">muiactant</option>
-            <option value="64">uiactig</option>
-            <option value="65">muiactig</option>
-            <option value="66">kg activo</option>
-            <option value="67">gramo activo</option>
-            <option value="68">gramo base</option>
-            <option value="96">packs</option>
-            <option value="98">otras unidades</option>
-        </select>
-    </td>
-
-    <td>
-        <input type="number"
-            name="items[0][precio]"
-            class="form-control item-precio"
-            min="0" step="0.01"
-            required>
-    </td>
-
-    <td>
-        <select name="items[0][iva]" class="form-control item-iva">
-
-            <option value="no gravado">No Gravado</option>
-            <option value="exento">Exento</option>
-
-            <option value="0">0%</option>
-            <option value="2.5">2,5%</option>
-            <option value="5">5%</option>
-            <option value="10.5">10,5%</option>
-            <option value="21" selected>21%</option>
-            <option value="27">27%</option>
-
-        </select>
-    </td>
-
-
-    <td><input type="text" class="form-control item-subtotal" readonly></td>
-
-    <td><button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button></td>
-
-</tr>
-`;
-
-
-
-            tbody.innerHTML = initial;
-
-            // Generar código inicial
-            actualizarCodigos();
+    filas.forEach(tr => {
+        let input = tr.querySelector('.item-codigo');
+        if (input) {
+            input.value = `${grupo}.${sub}`;
         }
+        sub++;
     });
+}
+</script>
 
+<script>
+// =====================================================
+// REMITOS ASOCIADOS – Agregar, eliminar y cargar inicial
+// =====================================================
 
-    // ============================
-    // HABILITAR / DESHABILITAR VALOR DÓLAR SEGÚN MONEDA
-    // ============================
+let filaRemito = 0;
 
-    document.addEventListener("DOMContentLoaded", function () {
+// Botón agregar remito
+document.getElementById('agregar-remito').addEventListener('click', function () {
+    agregarFilaRemito(filaRemito);
+    filaRemito++;
+});
 
-        const moneda = document.getElementById('moneda');
-        const valorDolar = document.getElementById('valor_dolar');
+// Función para agregar fila
+function agregarFilaRemito(i, data = null) {
 
-        function actualizarCampoDolar() {
-            if (moneda.value === "USD") {
-                // Habilitar campo
-                valorDolar.disabled = false;
-                valorDolar.required = true;
-            } else {
-                // Deshabilitar campo
-                valorDolar.disabled = true;
-                valorDolar.required = false;
-                valorDolar.value = 1; // valor fijo si no es USD
+    const tbody = document.querySelector('#tabla-remitos tbody');
+
+    let nuevaFila = `
+        <tr>
+            <td>
+                <input type="number" name="remitos[${i}][pto_venta]"
+                       class="form-control" min="1" required
+                       value="${data?.pto_venta ?? ''}">
+            </td>
+
+            <td>
+                <input type="number" name="remitos[${i}][comprobante]"
+                       class="form-control" min="1" required
+                       value="${data?.comprobante ?? ''}">
+            </td>
+
+            <td>
+                <input type="date" name="remitos[${i}][fecha_emision]"
+                       class="form-control" required
+                       value="${data?.fecha_emision ?? ''}">
+            </td>
+
+            <td>
+                <button type="button" class="btn btn-danger btn-sm eliminar-remito">&times;</button>
+            </td>
+        </tr>
+    `;
+
+    tbody.insertAdjacentHTML("beforeend", nuevaFila);
+}
+
+// Eliminar remito
+document.addEventListener("click", function (e) {
+    if (e.target.matches(".eliminar-remito")) {
+        e.target.closest("tr").remove();
+    }
+});
+
+// ============================
+// CARGAR FILA INICIAL DE REMITO
+// ============================
+document.addEventListener("DOMContentLoaded", function () {
+
+    let oldRemitos = @json(old('remitos'));
+
+    if (oldRemitos && Object.keys(oldRemitos).length > 0) {
+        filaRemito = 0;
+        Object.keys(oldRemitos).forEach(function (idx) {
+            agregarFilaRemito(filaRemito, oldRemitos[idx]);
+            filaRemito++;
+        });
+    } else {
+        // Agregar una fila vacía inicial siempre
+        agregarFilaRemito(0);
+        filaRemito = 1;
+    }
+});
+</script>
+
+<script>
+function reindexarItems() {
+
+    let filas = document.querySelectorAll('#tabla-items tbody tr');
+    let index = 0;
+
+    filas.forEach(tr => {
+
+        tr.setAttribute("data-index", index);
+
+        // Actualizar todos los NAME internos
+        tr.querySelectorAll("input, select").forEach(input => {
+
+            if (input.name && input.name.includes("items[")) {
+
+                // Reemplaza items[LOQUESEA] por items[index]
+                input.name = input.name.replace(/items\[\d+\]/, `items[${index}]`);
             }
-        }
-
-        // Ejecutar al cargar
-        actualizarCampoDolar();
-
-        // Detectar cambios (normal)
-        moneda.addEventListener('change', actualizarCampoDolar);
-
-        // Detectar cambios si usa Select2
-        if (typeof $ !== 'undefined' && $(moneda).data('select2')) {
-            $(moneda).on('select2:select', actualizarCampoDolar);
-        }
-    });
-
-    // ======================================
-    // REMITOS ASOCIADOS (dinámicos)
-    // ======================================
-
-    let filaRemito = 1;
-
-    document.getElementById('agregar-remito').addEventListener('click', function () {
-        agregarFilaRemito(filaRemito);
-        filaRemito++;
-    });
-
-    // Función para agregar fila
-    function agregarFilaRemito(i, data = null) {
-        const tbody = document.querySelector('#tabla-remitos tbody');
-
-        let nuevaFila = `
-            <tr>
-                <td>
-                    <input type="number" name="remitos[${i}][pto_venta]"
-                        class="form-control" min="1" required
-                        value="${data?.pto_venta ?? ''}">
-                </td>
-
-                <td>
-                    <input type="number" name="remitos[${i}][comprobante]"
-                        class="form-control" min="1" required
-                        value="${data?.comprobante ?? ''}">
-                </td>
-
-                <td>
-                    <input type="date" name="remitos[${i}][fecha_emision]"
-                        class="form-control" required
-                        value="${data?.fecha_emision ?? ''}">
-                </td>
-
-                <td>
-                    <button type="button" class="btn btn-danger btn-sm eliminar-remito">&times;</button>
-                </td>
-            </tr>
-        `;
-
-        tbody.insertAdjacentHTML('beforeend', nuevaFila);
-    }
-
-    // Eliminar fila
-    document.addEventListener('click', function (e) {
-        if (e.target.matches('.eliminar-remito')) {
-            e.target.closest('tr').remove();
-        }
-    });
-
-    // Reconstruir desde old() si hubo error de validación
-    document.addEventListener("DOMContentLoaded", function () {
-
-        let oldRemitos = @json(old('remitos'));
-
-        if (oldRemitos && Object.keys(oldRemitos).length > 0) {
-            filaRemito = 0;
-            Object.keys(oldRemitos).forEach(function (idx) {
-                agregarFilaRemito(filaRemito, oldRemitos[idx]);
-                filaRemito++;
-            });
-        } else {
-            // Fila inicial (opcional, si querés que arranque vacío no agregues esto)
-            agregarFilaRemito(0);
-            filaRemito = 1;
-        }
-
-    });
-
-    function actualizarCodigos() {
-        let filas = document.querySelectorAll('#tabla-items tbody tr');
-
-        let grupo = 1; // si querés cambiar el número principal lo ajustás acá
-        let sub = 1;
-
-        filas.forEach(tr => {
-            let codigo = `${grupo}.${sub}`;
-            tr.querySelector('.item-codigo').value = codigo;
-            sub++;
         });
-    }
 
-
-
+        index++;
+    });
+}
 </script>

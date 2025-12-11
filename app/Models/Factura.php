@@ -13,20 +13,17 @@ class Factura extends Model
         'fecha_emision',
         'concepto',
         'condicion_venta',
+        'moneda',
         'valor_dolar',
-        'importe_total',
         'estado',
-        'observaciones',
         'creado_por',
-        'aprobado_por',
-        'bonificacion',
-        'importe_bonificacion',
-        'percepcion_iva',
-        'percepcion_ingresos_brutos',
+        'fecha_desde',
+        'fecha_hasta',
+        'vencimiento_pago',
         'subtotal',
         'total_iva',
+        'importe_total',
     ];
-
 
     //
     public function items()

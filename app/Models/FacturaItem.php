@@ -11,12 +11,16 @@ class FacturaItem extends Model
 
     protected $fillable = [
         'factura_id',
-        'codigo',
         'descripcion',
         'cantidad',
         'precio_unitario',
         'iva',
-        'unidad',
+
+        // CAMPOS NUEVOS
+        'bonificacion_porcentaje',
+        'bonificacion_importe',
+        'subtotal_sin_iva',
+        'subtotal_con_iva',
         'subtotal',
     ];
 
