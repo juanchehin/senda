@@ -167,7 +167,27 @@ class FacturaController extends Controller
             $factura->fecha_hasta      = $validated['fecha_hasta'] ?? null;
             $factura->vencimiento_pago = $validated['vencimiento_pago'] ?? null;
 
+            /* =============================
+            PERCEPCIONES
+            ============================= */
+
+            // Percepción IVA
+            $factura->percepcion_iva_detalle   = $request->percepcion_iva_detalle ?? null;
+            $factura->percepcion_iva_base      = $request->percepcion_iva_base ?? 0;
+            $factura->percepcion_iva_alicuota  = $request->percepcion_iva_alicuota ?? 0;
+            $factura->percepcion_iva_importe   = $request->percepcion_iva_importe ?? 0;
+
+            // Percepción Ingresos Brutos
+            $factura->percepcion_iibb_detalle  = $request->percepcion_iibb_detalle ?? null;
+            $factura->percepcion_iibb_base     = $request->percepcion_iibb_base ?? 0;
+            $factura->percepcion_iibb_alicuota = $request->percepcion_iibb_alicuota ?? 0;
+            $factura->percepcion_iibb_importe  = $request->percepcion_iibb_importe ?? 0;
+
+            // =============================
+            // GUARDAR
+            // =============================
             $factura->save();
+
 
             // =============================
             // 3) ITEMS

@@ -249,39 +249,87 @@
 <button type="button" class="btn btn-primary btn-sm" id="agregar-item">Agregar Ítem</button>
 
 {{-- ============================
-     BONIFICACIONES / PERCEPCIONES
+     PERCEPCIONES
    ============================ --}}
-<div class="row mt-3">
+<h5 class="mt-4">Percepciones</h5>
 
-    {{-- Percepción de IVA --}}
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="percepcion_iva">Percepción de IVA</label>
-            <input type="number"
-                   name="percepcion_iva"
-                   id="percepcion_iva"
-                   class="form-control"
-                   step="0.01"
-                   placeholder="0.00"
-                   value="{{ old('percepcion_iva') }}">
-        </div>
-    </div>
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th></th>
+            <th>Detalle</th>
+            <th style="width:180px;">Base Imponible</th>
+            <th style="width:140px;">Alícuota (%)</th>
+            <th style="width:180px;">Importe</th>
+        </tr>
+    </thead>
+    <tbody>
 
-    {{-- Percepción de Ingresos Brutos --}}
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="percepcion_iibb">Percepción de Ingresos Brutos</label>
-            <input type="number"
-                   name="percepcion_iibb"
-                   id="percepcion_iibb"
-                   class="form-control"
-                   step="0.01"
-                   placeholder="0.00"
-                   value="{{ old('percepcion_iibb') }}">
-        </div>
-    </div>
+        {{-- PERCEPCIÓN DE IVA --}}
+        <tr>
+            <td class="text-end fw-bold">
+                Percepción de IVA
+            </td>
+            <td>
+                <input type="text"
+                       name="percepcion_iva_detalle"
+                       class="form-control"
+                       step="0.01" min="0">
+            </td>
+            <td>
+                <input type="number"
+                       name="percepcion_iva_base"
+                       class="form-control"
+                       step="0.01" min="0">
+            </td>
+            <td>
+                <input type="number"
+                       name="percepcion_iva_alicuota"
+                       class="form-control"
+                       step="0.01" min="0">
+            </td>
+            <td>
+                <input type="number"
+                       name="percepcion_iva_importe"
+                       class="form-control"
+                       step="0.01" min="0">
+            </td>
+        </tr>
 
-</div>
+        {{-- PERCEPCIÓN DE INGRESOS BRUTOS --}}
+        <tr>
+            <td class="text-end fw-bold">
+                Percepción de Ingresos Brutos
+            </td>
+            <td>
+                <input type="text"
+                       name="percepcion_iibb_detalle"
+                       class="form-control"
+                       step="0.01" min="0">
+            </td>
+            <td>
+                <input type="number"
+                       name="percepcion_iibb_base"
+                       class="form-control"
+                       step="0.01" min="0">
+            </td>
+            <td>
+                <input type="number"
+                       name="percepcion_iibb_alicuota"
+                       class="form-control"
+                       step="0.01" min="0">
+            </td>
+            <td>
+                <input type="number"
+                       name="percepcion_iibb_importe"
+                       class="form-control"
+                       step="0.01" min="0">
+            </td>
+
+        </tr>
+
+    </tbody>
+</table>
 
 
 {{-- ============================
