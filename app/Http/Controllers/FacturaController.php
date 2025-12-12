@@ -249,7 +249,6 @@ class FacturaController extends Controller
         } catch (\Exception $e) {
 
             DB::rollBack();
-            dd($e->getMessage());
 
             return back()
                 ->with('error', 'Error al guardar la factura: ' . $e->getMessage())
