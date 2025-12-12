@@ -12,6 +12,7 @@ class FacturaItem extends Model
     protected $fillable = [
         'factura_id',
         'codigo',
+        'unidad',
         'descripcion',
         'cantidad',
         'precio_unitario',

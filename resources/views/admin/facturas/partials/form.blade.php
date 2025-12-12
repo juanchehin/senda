@@ -333,13 +333,53 @@ document.getElementById('agregar-item').addEventListener('click', function () {
 
     <!-- Unidad -->
     <td>
-        <select name="items[${fila}][unidad]" class="form-control item-unidad" required>
-            <option value="">Sel...</option>
-            <option value="7">Unidades</option>
-            <option value="5">Litros</option>
-            <option value="1">Kilogramos</option>
-            <option value="2">Metros</option>
-        </select>
+        <select name="items[${fila}][unidad]" class="form-control">
+            <option value="">seleccionar...</option>
+            <option value="1">kilogramos</option>
+            <option value="2">metros</option>
+            <option value="3">metros cuadrados</option>
+            <option value="4">metros cúbicos</option>
+            <option value="5">litros</option>
+            <option value="6">1000 kWh</option>
+            <option value="7">unidades</option>
+            <option value="8">pares</option>
+            <option value="9">docenas</option>
+            <option value="10">quilates</option>
+            <option value="11">millares</option>
+            <option value="14">gramos</option>
+            <option value="15">milímetros</option>
+            <option value="16">mm cúbicos</option>
+            <option value="17">kilómetros</option>
+            <option value="18">hectolitros</option>
+            <option value="20">centímetros</option>
+            <option value="25">jgo. pqt. mazo naipes</option>
+            <option value="27">cm cúbicos</option>
+            <option value="29">toneladas</option>
+            <option value="30">dam cúbicos</option>
+            <option value="31">hm cúbicos</option>
+            <option value="32">km cúbicos</option>
+            <option value="33">microgramos</option>
+            <option value="34">nanogramos</option>
+            <option value="35">picogramos</option>
+            <option value="41">miligramos</option>
+            <option value="47">mililitros</option>
+            <option value="48">curie</option>
+            <option value="49">milicurie</option>
+            <option value="50">microcurie</option>
+            <option value="51">uiacthor</option>
+            <option value="52">muiacthor</option>
+            <option value="53">kg base</option>
+            <option value="54">gruesa</option>
+            <option value="61">kg bruto</option>
+            <option value="62">uiactant</option>
+            <option value="63">muiactant</option>
+            <option value="64">uiactig</option>
+            <option value="65">muiactig</option>
+            <option value="66">kg activo</option>
+            <option value="67">gramo activo</option>
+            <option value="68">gramo base</option>
+            <option value="96">packs</option>
+            <option value="98">otras unidades</option>
     </td>
 
     <!-- Precio Unitario -->

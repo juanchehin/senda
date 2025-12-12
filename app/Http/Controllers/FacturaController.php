@@ -175,6 +175,7 @@ class FacturaController extends Controller
             $subtotal_general  = 0;
             $total_iva_general = 0;
 
+
             foreach ($validated['items'] as $item) {
 
                 $cantidad = (float) $item['cantidad'];
@@ -183,16 +184,18 @@ class FacturaController extends Controller
                 $bonif    = (float) $item['bonificacion_porcentaje'];
 
                 // CALCULOS
-                $subtotal_bruto      = $cantidad * $precio;
+                // $subtotal_bruto      = $cantidad * $precio;
                 $bonif_importe       = $item['bonificacion_importe'];
                 $subtotal_sin_iva    = $item['subtotal_sin_iva'];
                 $subtotal_con_iva    = $item['subtotal_con_iva'];
                 $iva_importe         = $subtotal_sin_iva * ($iva / 100);
+                $unidad              = $item['unidad'];
 
                 // GUARDAR ITEM
                 FacturaItem::create([
                     'factura_id'              => $factura->id,
                     'codigo'                  => $item['codigo'],
+                    'unidad'                  => $unidad,
                     'descripcion'             => $item['descripcion'],
                     'cantidad'                => $cantidad,
                     'precio_unitario'         => $precio,
