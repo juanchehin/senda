@@ -235,6 +235,7 @@
             <th style="width: 150px;">Precio Unit.</th>
             <th style="width: 120px;">IVA (%)</th>
             <th style="width: 120px;">% Bonif.</th>
+            <th style="width: 120px;">Bonif. Imp.</th>
             <th style="width: 150px;">Subtotal c/IVA</th>
             <th style="width: 40px;"></th>
         </tr>
@@ -311,122 +312,127 @@ document.getElementById('agregar-item').addEventListener('click', function () {
     let nuevaFila = `
        <tr data-index="${fila}">
 
-    <!-- Código -->
-    <td>
-        <input type="text"
-               name="items[${fila}][codigo]"
-               class="form-control item-codigo"
-               readonly>
-    </td>
+        <!-- Código -->
+        <td>
+            <input type="text"
+                name="items[${fila}][codigo]"
+                class="form-control item-codigo"
+                readonly>
+        </td>
 
-    <!-- Descripción -->
-    <td>
-        <input type="text" name="items[${fila}][descripcion]" class="form-control item-desc" required>
-    </td>
+        <!-- Descripción -->
+        <td>
+            <input type="text" name="items[${fila}][descripcion]" class="form-control item-desc" required>
+        </td>
 
-    <!-- Cantidad -->
-    <td>
-        <input type="number" name="items[${fila}][cantidad]"
-               class="form-control item-cantidad"
-               min="1" step="0.01" required>
-    </td>
+        <!-- Cantidad -->
+        <td>
+            <input type="number" name="items[${fila}][cantidad]"
+                class="form-control item-cantidad"
+                min="1" step="0.01" required>
+        </td>
 
-    <!-- Unidad -->
-    <td>
-        <select name="items[${fila}][unidad]" class="form-control">
-            <option value="">seleccionar...</option>
-            <option value="1">kilogramos</option>
-            <option value="2">metros</option>
-            <option value="3">metros cuadrados</option>
-            <option value="4">metros cúbicos</option>
-            <option value="5">litros</option>
-            <option value="6">1000 kWh</option>
-            <option value="7">unidades</option>
-            <option value="8">pares</option>
-            <option value="9">docenas</option>
-            <option value="10">quilates</option>
-            <option value="11">millares</option>
-            <option value="14">gramos</option>
-            <option value="15">milímetros</option>
-            <option value="16">mm cúbicos</option>
-            <option value="17">kilómetros</option>
-            <option value="18">hectolitros</option>
-            <option value="20">centímetros</option>
-            <option value="25">jgo. pqt. mazo naipes</option>
-            <option value="27">cm cúbicos</option>
-            <option value="29">toneladas</option>
-            <option value="30">dam cúbicos</option>
-            <option value="31">hm cúbicos</option>
-            <option value="32">km cúbicos</option>
-            <option value="33">microgramos</option>
-            <option value="34">nanogramos</option>
-            <option value="35">picogramos</option>
-            <option value="41">miligramos</option>
-            <option value="47">mililitros</option>
-            <option value="48">curie</option>
-            <option value="49">milicurie</option>
-            <option value="50">microcurie</option>
-            <option value="51">uiacthor</option>
-            <option value="52">muiacthor</option>
-            <option value="53">kg base</option>
-            <option value="54">gruesa</option>
-            <option value="61">kg bruto</option>
-            <option value="62">uiactant</option>
-            <option value="63">muiactant</option>
-            <option value="64">uiactig</option>
-            <option value="65">muiactig</option>
-            <option value="66">kg activo</option>
-            <option value="67">gramo activo</option>
-            <option value="68">gramo base</option>
-            <option value="96">packs</option>
-            <option value="98">otras unidades</option>
-    </td>
+        <!-- Unidad -->
+        <td>
+            <select name="items[${fila}][unidad]" class="form-control">
+                <option value="">seleccionar...</option>
+                <option value="1">kilogramos</option>
+                <option value="2">metros</option>
+                <option value="3">metros cuadrados</option>
+                <option value="4">metros cúbicos</option>
+                <option value="5">litros</option>
+                <option value="6">1000 kWh</option>
+                <option value="7">unidades</option>
+                <option value="8">pares</option>
+                <option value="9">docenas</option>
+                <option value="10">quilates</option>
+                <option value="11">millares</option>
+                <option value="14">gramos</option>
+                <option value="15">milímetros</option>
+                <option value="16">mm cúbicos</option>
+                <option value="17">kilómetros</option>
+                <option value="18">hectolitros</option>
+                <option value="20">centímetros</option>
+                <option value="25">jgo. pqt. mazo naipes</option>
+                <option value="27">cm cúbicos</option>
+                <option value="29">toneladas</option>
+                <option value="30">dam cúbicos</option>
+                <option value="31">hm cúbicos</option>
+                <option value="32">km cúbicos</option>
+                <option value="33">microgramos</option>
+                <option value="34">nanogramos</option>
+                <option value="35">picogramos</option>
+                <option value="41">miligramos</option>
+                <option value="47">mililitros</option>
+                <option value="48">curie</option>
+                <option value="49">milicurie</option>
+                <option value="50">microcurie</option>
+                <option value="51">uiacthor</option>
+                <option value="52">muiacthor</option>
+                <option value="53">kg base</option>
+                <option value="54">gruesa</option>
+                <option value="61">kg bruto</option>
+                <option value="62">uiactant</option>
+                <option value="63">muiactant</option>
+                <option value="64">uiactig</option>
+                <option value="65">muiactig</option>
+                <option value="66">kg activo</option>
+                <option value="67">gramo activo</option>
+                <option value="68">gramo base</option>
+                <option value="96">packs</option>
+                <option value="98">otras unidades</option>
+            </select>
+        </td>
 
-    <!-- Precio Unitario -->
-    <td>
-        <input type="number" name="items[${fila}][precio]"
-               class="form-control item-precio"
-               min="0" step="0.01" required>
-    </td>
+        <!-- Precio Unitario -->
+        <td>
+            <input type="number" name="items[${fila}][precio]"
+                class="form-control item-precio"
+                min="0" step="0.01" required>
+        </td>
 
-    <!-- IVA -->
-    <td>
-        <select name="items[${fila}][iva]" class="form-control item-iva">
-            <option value="0">No Gravado</option>
-            <option value="0">Exento</option>
-            <option value="0">0%</option>
-            <option value="2.5">2,5%</option>
-            <option value="5">5%</option>
-            <option value="10.5">10,5%</option>
-            <option value="21" selected>21%</option>
-            <option value="27">27%</option>
-        </select>
-    </td>
+        <!-- IVA -->
+        <td>
+            <select name="items[${fila}][iva]" class="form-control item-iva">
+                <option value="0">No Gravado</option>
+                <option value="0">Exento</option>
+                <option value="0">0%</option>
+                <option value="2.5">2,5%</option>
+                <option value="5">5%</option>
+                <option value="10.5">10,5%</option>
+                <option value="21" selected>21%</option>
+                <option value="27">27%</option>
+            </select>
+        </td>
 
-    <!-- % Bonificación -->
-    <td>
-        <input type="number" name="items[${fila}][bonificacion_porcentaje]"
-               class="form-control item-bonif"
-               min="0" max="100" step="0.01" value="0">
-    </td>
+        <!-- % Bonificación -->
+        <td>
+            <input type="number" name="items[${fila}][bonificacion_porcentaje]"
+                class="form-control item-bonif"
+                min="0" max="100" step="0.01" value="0">
+        </td>
 
-    <!-- Subtotal c/iva + HIDDEN (LOS IMPORTANTES) -->
-    <td>
-        <input type="text" class="form-control item-subtotal" readonly>
+        <!-- IMPORTE BONIFICACIÓN (NUEVO) -->
+        <td>
+            <input type="text"
+                name="items[${fila}][bonificacion_importe]"
+                class="form-control item-bonif-importe"
+                readonly value="0.00">
+        </td>
 
-        <input type="hidden" name="items[${fila}][bonificacion_importe]" class="bonif-importe-hidden">
-        <input type="hidden" name="items[${fila}][subtotal_sin_iva]" class="subtotal-sin-iva-hidden">
-        <input type="hidden" name="items[${fila}][subtotal_con_iva]" class="subtotal-con-iva-hidden">
-    </td>
+        <!-- Subtotal c/iva + HIDDEN -->
+        <td>
+            <input type="text" class="form-control item-subtotal" readonly>
 
+            <input type="hidden" name="items[${fila}][subtotal_sin_iva]" class="subtotal-sin-iva-hidden">
+            <input type="hidden" name="items[${fila}][subtotal_con_iva]" class="subtotal-con-iva-hidden">
+        </td>
 
-
-    <!-- Eliminar -->
-    <td>
-        <button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button>
-    </td>
-</tr>
-
+        <!-- Eliminar -->
+        <td>
+            <button type="button" class="btn btn-danger btn-sm eliminar-item">&times;</button>
+        </td>
+    </tr>
     `;
 
     tbody.insertAdjacentHTML('beforeend', nuevaFila);
@@ -434,12 +440,9 @@ document.getElementById('agregar-item').addEventListener('click', function () {
     actualizarCodigos();
     reindexarItems();
 
-    // <<< NUEVO >>>
     setTimeout(() => {
         recalcular();
     }, 50);
-
-
 });
 
 
@@ -448,74 +451,63 @@ document.getElementById('agregar-item').addEventListener('click', function () {
    ============================================================ */
 function recalcular() {
 
-    let totalFactura = 0;
+    const filas = document.querySelectorAll('#items-body tr');
+    let importeTotal = 0;
 
-    document.querySelectorAll('#tabla-items tbody tr').forEach(function (fila) {
+    filas.forEach(fila => {
 
-        let cantidad = parseFloat(fila.querySelector('.item-cantidad').value) || 0;
-        let precio   = parseFloat(fila.querySelector('.item-precio').value) || 0;
+        const cantidad = parseFloat(fila.querySelector('.item-cantidad')?.value) || 0;
+        const precio = parseFloat(fila.querySelector('.item-precio')?.value) || 0;
+        const bonifPorc = parseFloat(fila.querySelector('.item-bonif')?.value) || 0;
+        const iva = parseFloat(fila.querySelector('.item-iva')?.value) || 0;
 
-        let iva_raw  = fila.querySelector('.item-iva').value;
+        // ===== BONIFICACIÓN =====
+        const bonifUnit = precio * (bonifPorc / 100);
+        const precioFinalUnit = precio - bonifUnit;
 
-        // Convertir IVA: si es NG o EX => 0%
-        let iva = (!iva_raw || isNaN(parseFloat(iva_raw))) ? 0 : parseFloat(iva_raw);
+        // ===== SUBTOTALES =====
+        const subtotalSinIva = cantidad * precioFinalUnit;
+        const ivaImporte = subtotalSinIva * (iva / 100);
+        const subtotalConIva = subtotalSinIva + ivaImporte;
 
-        let bonif    = parseFloat(fila.querySelector('.item-bonif').value) || 0;
+        // ===== ACUMULAR TOTAL =====
+        if (!isNaN(subtotalConIva)) {
+            importeTotal += subtotalConIva;
+        }
 
-        // =============================
-        // CALCULOS
-        // =============================
+        // ===== ASIGNAR A INPUTS (SEGURO) =====
+        const bonifInput = fila.querySelector('.item-bonif-importe');
+        if (bonifInput) {
+            bonifInput.value = bonifUnit.toFixed(2);
+        }
 
-        // SUBTOTAL BRUTO
-        let subtotal_bruto = cantidad * precio;
+        const subtotalInput = fila.querySelector('.item-subtotal');
+        if (subtotalInput) {
+            subtotalInput.value = subtotalConIva.toFixed(2);
+        }
 
-        // IMPORTE DE BONIFICACIÓN
-        let bonif_importe = subtotal_bruto * (bonif / 100);
+        const bonifHidden = fila.querySelector('.bonif-importe-hidden');
+        if (bonifHidden) {
+            bonifHidden.value = bonifUnit.toFixed(2);
+        }
 
-        // SUBTOTAL SIN IVA
-        let subtotal_sin_iva = subtotal_bruto - bonif_importe;
+        const sinIvaHidden = fila.querySelector('.subtotal-sin-iva-hidden');
+        if (sinIvaHidden) {
+            sinIvaHidden.value = subtotalSinIva.toFixed(2);
+        }
 
-        // IMPORTE IVA
-        let iva_importe = subtotal_sin_iva * (iva / 100);
-
-        // SUBTOTAL FINAL CON IVA
-        let subtotal_con_iva = subtotal_sin_iva + iva_importe;
-
-        // =============================
-        // MOSTRAR EN TABLA
-        // =============================
-        fila.querySelector('.item-subtotal').value =
-            subtotal_con_iva.toFixed(2);
-
-        // =============================
-        // GUARDAR EN LOS HIDDEN
-        // =============================
-        fila.querySelector('.bonif-importe-hidden').value =
-            bonif_importe.toFixed(2);
-
-        fila.querySelector('.subtotal-sin-iva-hidden').value =
-            subtotal_sin_iva.toFixed(2);
-
-        fila.querySelector('.subtotal-con-iva-hidden').value =
-            subtotal_con_iva.toFixed(2); // ← FALTABA (era la causa del error)
-
-        // =============================
-        // ACUMULAR TOTAL FACTURA
-        // =============================
-        totalFactura += subtotal_con_iva;
-
+        const conIvaHidden = fila.querySelector('.subtotal-con-iva-hidden');
+        if (conIvaHidden) {
+            conIvaHidden.value = subtotalConIva.toFixed(2);
+        }
     });
 
-    // =============================
-    // ACTUALIZAR TOTAL GENERAL
-    // =============================
-    let totalInput = document.getElementById('importe_total');
+    // ===== IMPORTE TOTAL FINAL =====
+    const totalInput = document.getElementById('importe_total');
     if (totalInput) {
-        totalInput.value = totalFactura.toFixed(2);
+        totalInput.value = importeTotal.toFixed(2);
     }
 }
-
-
 
 /* ============================================================
    EVENTOS DE RECALCULAR Y ELIMINAR
