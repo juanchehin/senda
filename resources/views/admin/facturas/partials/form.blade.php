@@ -130,7 +130,6 @@
 
 </div>
 
-
 <br><br>
 
 <h3>Datos del Receptor</h3>
@@ -821,7 +820,7 @@ function actualizarCampoDolar() {
     }
 }
 
-// 🔥 ejecutar al cargar (old(), edición, etc.)
+//
 document.addEventListener('DOMContentLoaded', actualizarCampoDolar);
 
 

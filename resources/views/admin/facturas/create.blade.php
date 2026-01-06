@@ -83,7 +83,7 @@
             function actualizar() {
                 const v = concepto.value;
 
-                if (v == "2") {
+                if (v == "2" || v == "3") {
                     bloque.style.display = "flex"; // se ve lindo con bootstrap
                 } else {
                     bloque.style.display = "none";
