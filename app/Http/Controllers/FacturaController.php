@@ -467,6 +467,16 @@ class FacturaController extends Controller
     {
         $factura = Factura::with('cliente', 'items')->findOrFail($id);
 
+        $empresa = (object)[
+            'razon_social' => 'SECAR INGENIERIA ELECTRICA SRL',
+            'cuit' => '30-XXXXXXXX-X',
+            'direccion' => 'Mitre 751 - San Miguel de Tucumán',
+            'condicion_iva' => 'Responsable Inscripto',
+            'iibb' => '30-XXXXXXXX-X',
+            'inicio_actividades' => '01/01/2010',
+        ];
+
+
         // ====== CAMPOS SEGUROS (reemplazo con "-") ======
         $cuitEmisor        = $factura->cuit_emisor ?? "-";
         $puntoVenta        = $factura->punto_venta ?? "-";
@@ -499,7 +509,7 @@ class FacturaController extends Controller
         $urlQr = "https://www.afip.gob.ar/fe/qr/?p=" . $qrBase64;
 
         // PDF
-        $pdf = \PDF::loadView('admin.facturas.pdf', compact('factura', 'urlQr'));
+        $pdf = \PDF::loadView('admin.facturas.pdf', compact('factura','empresa', 'urlQr'));
 
         // 👉 Ya no se valida el estado
         return $pdf->stream("Factura-{$factura->id}.pdf");
