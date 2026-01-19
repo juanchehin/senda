@@ -27,6 +27,37 @@
     </div>
 </div>
 
+<div class="col-md-3">
+    <div class="form-group">
+        <label for="condicion_arca">Condición ARCA</label>
+        <select name="condicion_arca" id="condicion_arca" class="form-control" required>
+            <option value="">Seleccione...</option>
+
+            <option value="RI" {{ old('condicion_arca', $orden->condicion_arca ?? '') == 'RI' ? 'selected' : '' }}>
+                Responsable Inscripto
+            </option>
+
+            <option value="EX" {{ old('condicion_arca', $orden->condicion_arca ?? '') == 'EX' ? 'selected' : '' }}>
+                Exento
+            </option>
+
+            <option value="NR" {{ old('condicion_arca', $orden->condicion_arca ?? '') == 'NR' ? 'selected' : '' }}>
+                No Responsable
+            </option>
+
+            <option value="CF" {{ old('condicion_arca', $orden->condicion_arca ?? '') == 'CF' ? 'selected' : '' }}>
+                Consumidor Final
+            </option>
+
+            <option value="MT" {{ old('condicion_arca', $orden->condicion_arca ?? '') == 'MT' ? 'selected' : '' }}>
+                Responsable Monotributo
+            </option>
+
+        </select>
+    </div>
+</div>
+
+
 <div class="row mt-3">
     <div class="col-md-12">
         <label>Domicilio Comercial</label>
