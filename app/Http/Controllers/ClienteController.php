@@ -141,4 +141,28 @@ class ClienteController extends Controller
             ->route('clientes.index')
             ->with('success', 'Cliente eliminado correctamente');
     }
+
+    public function buscar(Request $request)
+    {
+        $q = $request->get('q');
+
+        if (!$q || strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $clientes = Cliente::query()
+            ->where('razon_social', 'like', "%{$q}%")
+            ->orWhere('cuit', 'like', "%{$q}%")
+            ->limit(10)
+            ->get([
+                'id',
+                'razon_social',
+                'cuit',
+                'condicion_iva',
+                'direccion',
+                'email',
+            ]);
+
+        return response()->json($clientes);
+    }
 }

@@ -152,9 +152,27 @@
     <div class="col-md-6">
         <div class="form-group">
             <label for="razon_social">Razón Social</label>
-            <input type="text" name="razon_social" id="razon_social"
-                   value="{{ old('razon_social') }}"
-                   class="form-control" required>
+
+            <div class="position-relative">
+                <input type="text"
+                    name="razon_social"
+                    id="razon_social"
+                    value="{{ old('razon_social') }}"
+                    class="form-control"
+                    autocomplete="off"
+                    required>
+
+                {{-- para guardar el id del cliente --}}
+                <input type="hidden" name="cliente_id" id="cliente_id" value="{{ old('cliente_id') }}">
+
+                {{-- dropdown sugerencias --}}
+                <div id="dropdown-clientes"
+                    class="list-group position-absolute w-100 shadow"
+                    style="z-index: 9999; max-height: 240px; overflow-y: auto; display:none;">
+                </div>
+            </div>
+
+
         </div>
     </div>
 
@@ -943,4 +961,128 @@ document.addEventListener('change', function (e) {
     }
 });
 
+</script>
+
+<script>
+/* ============================================================
+   AUTOCOMPLETADO CLIENTES (Razón Social)
+   ============================================================ */
+
+const inputRazon = document.getElementById('razon_social');
+const dropdownClientes = document.getElementById('dropdown-clientes');
+
+const inputClienteId = document.getElementById('cliente_id');
+const inputCuit = document.getElementById('cuit');
+const selectCondIva = document.getElementById('condicion_iva');
+const inputDireccion = document.getElementById('direccion');
+const inputEmail = document.getElementById('email');
+
+let debounceTimer = null;
+
+function limpiarClienteSeleccionado() {
+    inputClienteId.value = '';
+}
+
+function ocultarDropdown() {
+    dropdownClientes.style.display = 'none';
+    dropdownClientes.innerHTML = '';
+}
+
+function mostrarDropdown() {
+    dropdownClientes.style.display = 'block';
+}
+
+function renderSugerencias(clientes) {
+    dropdownClientes.innerHTML = '';
+
+    if (!clientes.length) {
+        dropdownClientes.innerHTML = `<div class="list-group-item text-muted">Sin resultados</div>`;
+        mostrarDropdown();
+        return;
+    }
+
+    clientes.forEach(cli => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'list-group-item list-group-item-action';
+
+        item.innerHTML = `
+            <div class="d-flex justify-content-between">
+                <strong>${cli.razon_social ?? ''}</strong>
+                <small class="text-muted">${cli.cuit ?? ''}</small>
+            </div>
+            <small class="text-muted">${cli.direccion ?? ''}</small>
+        `;
+
+        item.addEventListener('click', () => {
+            // completar campos
+            inputRazon.value = cli.razon_social ?? '';
+            inputClienteId.value = cli.id ?? '';
+
+            inputCuit.value = cli.cuit ?? '';
+            inputDireccion.value = cli.direccion ?? '';
+            inputEmail.value = cli.email ?? '';
+
+            // setear condición IVA si existe en el select
+            if (cli.condicion_iva) {
+                selectCondIva.value = cli.condicion_iva ?? '';
+                selectCondIva.dispatchEvent(new Event('change', { bubbles: true }));
+
+            }
+
+            ocultarDropdown();
+        });
+
+        dropdownClientes.appendChild(item);
+    });
+
+    mostrarDropdown();
+}
+
+async function buscarClientes(q) {
+    const url = `{{ route('clientes.buscar') }}?q=${encodeURIComponent(q)}`;
+
+    const resp = await fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    });
+
+    if (!resp.ok) return [];
+
+    return await resp.json();
+}
+
+inputRazon.addEventListener('input', () => {
+    limpiarClienteSeleccionado();
+
+    const q = inputRazon.value.trim();
+
+    if (q.length < 2) {
+        ocultarDropdown();
+        return;
+    }
+
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(async () => {
+        try {
+            const clientes = await buscarClientes(q);
+            renderSugerencias(clientes);
+        } catch (e) {
+            console.error('Error buscando clientes:', e);
+            ocultarDropdown();
+        }
+    }, 250);
+});
+
+// ocultar cuando haces click afuera
+document.addEventListener('click', (e) => {
+    const dentro = dropdownClientes.contains(e.target) || inputRazon.contains(e.target);
+    if (!dentro) ocultarDropdown();
+});
+
+// opcional: ESC para cerrar
+inputRazon.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') ocultarDropdown();
+});
 </script>

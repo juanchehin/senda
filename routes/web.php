@@ -38,9 +38,15 @@ Route::middleware(['auth', 'role:secretaria|admin|ingeniero'])->group(function (
     /* =======================
      | CLIENTES
      ======================= */
-    Route::resource('clientes', ClienteController::class);
+
     Route::get('clientes/{cliente}/edit', [ClienteController::class, 'edit'])
         ->name('clientes.edit');
+
+    Route::get('clientes/buscar', [ClienteController::class, 'buscar'])
+    ->name('clientes.buscar');
+
+    Route::resource('clientes', ClienteController::class);
+
 
 
     /* =======================
