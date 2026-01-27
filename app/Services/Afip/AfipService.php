@@ -113,7 +113,7 @@ class AfipService
 
 
     /**
-     * Envia la factura al WSFE producción.
+     * Envía la factura al WSFE (AFIP).
      */
     public function enviarFactura($factura)
     {
@@ -126,7 +126,7 @@ class AfipService
             $this->obtenerToken();
         }
 
-        $ta = simplexml_load_file($this->taPath);
+        $ta    = simplexml_load_file($this->taPath);
         $token = (string)$ta->credentials->token;
         $sign  = (string)$ta->credentials->sign;
 
@@ -134,8 +134,8 @@ class AfipService
         // 2) SOAP
         // ==============================
         $client = new \SoapClient($this->wsfeWsdl, [
-            'trace' => 1,
-            'exceptions' => true
+            'trace'      => 1,
+            'exceptions' => true,
         ]);
 
         $auth = [
@@ -145,14 +145,14 @@ class AfipService
         ];
 
         // ==============================
-        // 3) NÚMERO COMPROBANTE
+        // 3) TIPO Y NÚMERO DE COMPROBANTE
         // ==============================
         $cbteTipo = $factura->tipo_comprobante === 'A' ? 1 : 6;
 
         $ultimo = $client->FECompUltimoAutorizado([
-            'Auth'   => $auth,
-            'PtoVta' => $factura->punto_venta,
-            'CbteTipo' => $cbteTipo,
+        'Auth'     => $auth,
+        'PtoVta'   => $factura->punto_venta,
+        'CbteTipo' => $cbteTipo,
         ]);
 
         $cbteDesde = $ultimo->FECompUltimoAutorizadoResult->CbteNro + 1;
@@ -160,38 +160,59 @@ class AfipService
         // ==============================
         // 4) MONEDA
         // ==============================
-        $monId = $factura->moneda === 'USD' ? 'DOL' : 'PES';
+        $monId    = $factura->moneda === 'USD' ? 'DOL' : 'PES';
         $monCotiz = $factura->moneda === 'USD'
             ? max(1, (float)$factura->valor_dolar)
             : 1;
 
         // ==============================
-        // 5) DOCUMENTO
+        // 5) DOCUMENTO CLIENTE
         // ==============================
-        $docTipo = $factura->cliente->cuit ? 80 : 99;
-        $docNro  = $factura->cliente->cuit ?? 0;
+        $cuitCliente = preg_replace('/[^0-9]/', '', $factura->cliente->cuit);
+
+        if ($cbteTipo == 1) { // FACTURA A
+
+            if (!$this->cuitValido($cuitCliente)) {
+                throw new \Exception(
+                    'Factura A rechazada: el cliente debe tener CUIT válido.'
+                );
+            }
+
+            $docTipo = 80;
+            $docNro  = (int)$cuitCliente;
+
+        } else { // FACTURA B
+
+            if ($this->cuitValido($cuitCliente)) {
+                $docTipo = 80;
+                $docNro  = (int)$cuitCliente;
+            } else {
+                $docTipo = 99;
+                $docNro  = 0;
+            }
+        }
+
 
         // ==============================
-        // 6) FECHAS SERVICIOS
+        // 6) FECHAS DE SERVICIO
         // ==============================
         $fchServDesde = null;
         $fchServHasta = null;
         $fchVtoPago   = null;
 
-        if (in_array($factura->concepto, [2,3])) {
+        if (in_array($factura->concepto, [2, 3])) {
             $fchServDesde = $factura->fecha_desde ? date('Ymd', strtotime($factura->fecha_desde)) : null;
             $fchServHasta = $factura->fecha_hasta ? date('Ymd', strtotime($factura->fecha_hasta)) : null;
             $fchVtoPago   = $factura->vencimiento_pago ? date('Ymd', strtotime($factura->vencimiento_pago)) : null;
         }
 
         // ==============================
-        // 7) RECÁLCULO DESDE ÍTEMS
+        // 7) RECÁLCULO DE ÍTEMS
         // ==============================
-        $impNeto = 0;
-        $impIVA = 0;
-        $impOpEx = 0;
-        $impTotConc = 0;
-
+        $impNeto     = 0;
+        $impIVA      = 0;
+        $impOpEx     = 0;
+        $impTotConc  = 0;
         $ivaAgrupado = [];
 
         foreach ($factura->items as $item) {
@@ -199,24 +220,24 @@ class AfipService
             $base = (float)$item->subtotal_sin_iva;
             $iva  = (float)$item->iva;
 
-            // NO GRAVADO / EXENTO
             if ($iva == 0) {
                 $impOpEx += $base;
                 continue;
             }
 
-            // MAPEO AFIP
             $map = [
-                2.5 => 9,
-                5   => 8,
-                10.5=> 4,
-                21  => 5,
-                27  => 6,
+                2.5  => 9,
+                5    => 8,
+                10.5 => 4,
+                21   => 5,
+                27   => 6,
             ];
 
-            if (!isset($map[$iva])) continue;
+            if (!isset($map[$iva])) {
+                continue;
+            }
 
-            $ivaId = $map[$iva];
+            $ivaId      = $map[$iva];
             $ivaImporte = round($base * ($iva / 100), 2);
 
             $impNeto += $base;
@@ -224,9 +245,9 @@ class AfipService
 
             if (!isset($ivaAgrupado[$ivaId])) {
                 $ivaAgrupado[$ivaId] = [
-                    'Id' => $ivaId,
-                    'BaseImp' => 0,
-                    'Importe' => 0,
+                    'Id'      => $ivaId,
+                    'BaseImp'=> 0,
+                    'Importe'=> 0,
                 ];
             }
 
@@ -235,28 +256,73 @@ class AfipService
         }
 
         // ==============================
-        // 8) ARMAR REQUEST
+        // 8) TRIBUTOS / PERCEPCIONES
+        // ==============================
+        $tributos = [];
+        $impTrib  = 0;
+
+        if ($factura->percepcion_iva_importe > 0) {
+            $tributos[] = [
+                'Id'      => 6,
+                'Desc'    => $factura->percepcion_iva_detalle ?? 'Percepción IVA',
+                'BaseImp' => round((float)$factura->percepcion_iva_base, 2),
+                'Alic'    => round((float)$factura->percepcion_iva_alicuota, 2),
+                'Importe' => round((float)$factura->percepcion_iva_importe, 2),
+            ];
+            $impTrib += $factura->percepcion_iva_importe;
+        }
+
+        if ($factura->percepcion_iibb_importe > 0) {
+            $tributos[] = [
+                'Id'      => 2,
+                'Desc'    => $factura->percepcion_iibb_detalle ?? 'Percepción IIBB',
+                'BaseImp' => round((float)$factura->percepcion_iibb_base, 2),
+                'Alic'    => round((float)$factura->percepcion_iibb_alicuota, 2),
+                'Importe' => round((float)$factura->percepcion_iibb_importe, 2),
+            ];
+            $impTrib += $factura->percepcion_iibb_importe;
+        }
+
+        if ($factura->importe_total_otros_tributos > 0) {
+            $tributos[] = [
+                'Id'      => 99,
+                'Desc'    => 'Otros Tributos',
+                'BaseImp' => round((float)$factura->importe_total_otros_tributos, 2),
+                'Alic'    => 0,
+                'Importe' => round((float)$factura->importe_total_otros_tributos, 2),
+            ];
+            $impTrib += $factura->importe_total_otros_tributos;
+        }
+
+        // ==============================
+        // 9) ARMAR DETALLE AFIP
         // ==============================
         $detalle = [
-            'Concepto'  => $factura->concepto,
-            'DocTipo'   => $docTipo,
-            'DocNro'    => $docNro,
-            'CbteDesde' => $cbteDesde,
-            'CbteHasta' => $cbteDesde,
-            'CbteFch'   => date('Ymd', strtotime($factura->fecha_emision)),
-            'ImpTotal'  => round($factura->importe_total, 2),
-            'ImpTotConc'=> round($impTotConc, 2),
-            'ImpNeto'   => round($impNeto, 2),
-            'ImpIVA'    => round($impIVA, 2),
-            'ImpTrib'   => 0,
-            'ImpOpEx'   => round($impOpEx, 2),
-            'MonId'     => $monId,
-            'MonCotiz'  => $monCotiz,
+            'Concepto'   => $factura->concepto,
+            'DocTipo'    => $docTipo,
+            'DocNro'     => $docNro,
+            'CbteDesde'  => $cbteDesde,
+            'CbteHasta'  => $cbteDesde,
+            'CbteFch'    => date('Ymd', strtotime($factura->fecha_emision)),
+            'ImpTotal'   => round($factura->importe_total + $impTrib, 2),
+            'ImpTotConc' => round($impTotConc, 2),
+            'ImpNeto'    => round($impNeto, 2),
+            'ImpIVA'     => round($impIVA, 2),
+            'ImpTrib'    => round($impTrib, 2),
+            'ImpOpEx'    => round($impOpEx, 2),
+            'MonId'      => $monId,
+            'MonCotiz'   => $monCotiz,
         ];
 
         if (!empty($ivaAgrupado)) {
             $detalle['Iva'] = [
-                'AlicIva' => array_values($ivaAgrupado)
+                'AlicIva' => array_values($ivaAgrupado),
+            ];
+        }
+
+        if (!empty($tributos)) {
+            $detalle['Tributos'] = [
+                'Tributo' => $tributos,
             ];
         }
 
@@ -267,7 +333,31 @@ class AfipService
         }
 
         // ==============================
-        // 9) ENVÍO
+        // 10) REMITOS / COMPROBANTES ASOCIADOS
+        // ==============================
+        if ($factura->remitos && $factura->remitos->count()) {
+
+            $cbtesAsoc = [];
+
+            foreach ($factura->remitos as $remito) {
+                $cbtesAsoc[] = [
+                    'Tipo'   => 91,
+                    'PtoVta' => $remito->pto_venta,
+                    'Nro'    => $remito->comprobante,
+                ];
+            }
+
+            if (!empty($cbtesAsoc)) {
+                $detalle['CbtesAsoc'] = [
+                    'CbteAsoc' => $cbtesAsoc,
+                ];
+            }
+        }
+
+        Log::info('📤 AFIP FECAE DETALLE', $detalle);
+
+        // ==============================
+        // 11) ENVÍO A AFIP
         // ==============================
         $res = $client->FECAESolicitar([
             'Auth' => $auth,
@@ -278,13 +368,14 @@ class AfipService
                     'CbteTipo'=> $cbteTipo,
                 ],
                 'FeDetReq' => [
-                    'FECAEDetRequest' => $detalle
-                ]
-            ]
+                    'FECAEDetRequest' => $detalle,
+                ],
+            ],
         ]);
 
         return $res;
     }
+
 
 
 
@@ -405,6 +496,31 @@ class AfipService
         // =======================
         return $wsfe->FECAESolicitar($data);
     }
+
+    private function cuitValido($cuit)
+    {
+        $cuit = preg_replace('/[^0-9]/', '', $cuit);
+
+        if (strlen($cuit) != 11) {
+            return false;
+        }
+
+        $multiplicadores = [5,4,3,2,7,6,5,4,3,2];
+        $suma = 0;
+
+        for ($i = 0; $i < 10; $i++) {
+            $suma += $cuit[$i] * $multiplicadores[$i];
+        }
+
+        $resto = $suma % 11;
+        $digito = 11 - $resto;
+
+        if ($digito == 11) $digito = 0;
+        if ($digito == 10) $digito = 9;
+
+        return $digito == $cuit[10];
+    }
+
 
 
 }
