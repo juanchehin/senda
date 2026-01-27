@@ -328,6 +328,28 @@ return [
             ],
         ],
 
+
+        // ÓRDENES DE PEDIDO
+        [
+            'text'    => 'Órdenes de pedido',
+            'icon'    => 'fas fa-fw fa-shopping-cart',
+            'can'     => 'ver ordenes',
+            'submenu' => [
+                [
+                    'text'  => 'Nueva Orden de pedido',
+                    'route' => 'ordenes.create',
+                    'icon'  => 'fas fa-fw fa-plus-circle',
+                    'can'   => 'crear ordenes',
+                ],
+                [
+                    'text'  => 'Listado de pedidos',
+                    'route' => 'ordenes.index',
+                    'icon'  => 'fas fa-fw fa-list',
+                    'can'   => 'ver ordenes',
+                ],
+            ],
+        ],
+
         // FACTURACIÓN
         [
             'text'    => 'Facturación',
@@ -370,26 +392,6 @@ return [
         ],
 
 
-        // ÓRDENES DE COMPRA
-        [
-            'text'    => 'Órdenes de Compra',
-            'icon'    => 'fas fa-fw fa-shopping-cart',
-            'can'     => 'ver ordenes',
-            'submenu' => [
-                [
-                    'text'  => 'Nueva Orden de Compra',
-                    'route' => 'ordenes.create',
-                    'icon'  => 'fas fa-fw fa-plus-circle',
-                    'can'   => 'crear ordenes',
-                ],
-                [
-                    'text'  => 'Listado de Órdenes',
-                    'route' => 'ordenes.index',
-                    'icon'  => 'fas fa-fw fa-list',
-                    'can'   => 'ver ordenes',
-                ],
-            ],
-        ],
 
         // REMITOS
         [
