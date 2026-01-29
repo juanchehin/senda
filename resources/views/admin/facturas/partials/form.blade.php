@@ -193,13 +193,26 @@
             <label for="condicion_iva">Condición frente al IVA</label>
             <select name="condicion_iva" id="condicion_iva" class="form-control" required>
                 <option value="">Seleccione...</option>
-                <option value="RI" {{ old('condicion_iva') == 'RI' ? 'selected' : '' }}>Responsable Inscripto</option>
-                <option value="MT" {{ old('condicion_iva') == 'MT' ? 'selected' : '' }}>Monotributista</option>
-                <option value="CF" {{ old('condicion_iva') == 'CF' ? 'selected' : '' }}>Consumidor Final</option>
-                <option value="EX" {{ old('condicion_iva') == 'EX' ? 'selected' : '' }}>Exento</option>
+
+                <option value="RI" {{ old('condicion_iva') == 'RI' ? 'selected' : '' }}>
+                    IVA Responsable Inscripto
+                </option>
+
+                <option value="MT" {{ old('condicion_iva') == 'MT' ? 'selected' : '' }}>
+                    Responsable Monotributo
+                </option>
+
+                <option value="MS" {{ old('condicion_iva') == 'MS' ? 'selected' : '' }}>
+                    Monotributista Social
+                </option>
+
+                <option value="MTIP" {{ old('condicion_iva') == 'MTIP' ? 'selected' : '' }}>
+                    Monotributista Trabajador Independiente Promovido
+                </option>
             </select>
         </div>
     </div>
+
 
 </div>
 
@@ -869,62 +882,61 @@ document.addEventListener('DOMContentLoaded', actualizarCampoDolar);
 
 <script>
 // Actualiza las opciones de `condicion_iva` según `tipo_comprobante`
+
 function actualizarCondicionIva(useOld = false) {
     const tipo = document.getElementById('tipo_comprobante');
     const select = document.getElementById('condicion_iva');
     if (!tipo || !select) return;
 
+    // FACTURA A
     const opcionesA = [
         { value: '', text: 'Seleccione...' },
-        { value: 'RI', text: 'Responsable Inscripto' },
-        { value: 'MT', text: 'Monotributista' },
-        { value: 'CF', text: 'Consumidor Final' },
-        { value: 'EX', text: 'Exento' }
+        { value: 'RI', text: 'IVA Responsable Inscripto' },
+        { value: 'MT', text: 'Responsable Monotributo' },
+        { value: 'MS', text: 'Monotributista Social' },
+        { value: 'MTIP', text: 'Monotributista Trabajador Independiente Promovido' }
     ];
 
+    // FACTURA B
     const opcionesB = [
         { value: '', text: 'Seleccione...' },
-        { value: 'IVA Sujeto', text: 'IVA Sujeto' },
-        { value: 'Excento', text: 'Excento' },
-        { value: 'Consumidor Final', text: 'Consumidor Final' },
-        { value: 'Sujeto No Categorizado', text: 'Sujeto No Categorizado' },
-        { value: 'Proveedor del Exterior', text: 'Proveedor del Exterior' },
-        { value: 'Cliente del Exterior', text: 'Cliente del Exterior' },
-        { value: 'IVA Liberado - Ley N° 16.940 IVA', text: 'IVA Liberado - Ley N° 16.940 IVA' },
-        { value: 'No Alcanzado', text: 'No Alcanzado' }
+        { value: 'EX', text: 'IVA Sujeto Exento' },
+        { value: 'CF', text: 'Consumidor Final' },
+        { value: 'NC', text: 'Sujeto No Categorizado' },
+        { value: 'PE', text: 'Proveedor del Exterior' },
+        { value: 'CE', text: 'Cliente del Exterior' },
+        { value: 'IL', text: 'IVA Liberado - Ley N° 19.640' },
+        { value: 'NA', text: 'IVA No Alcanzado' }
     ];
 
-    // elegir conjunto según tipo
+    // elegir conjunto según tipo de comprobante
     const conjunto = (tipo.value === 'B') ? opcionesB : opcionesA;
 
-    // conservar valor previo (server-side old) sólo si se indica
+    // recuperar old() de Laravel si se solicita
     const oldCond = useOld ? @json(old('condicion_iva')) : null;
 
-    // limpiar y reconstruir
+    // limpiar select
     select.innerHTML = '';
+
+    // cargar opciones
     conjunto.forEach(opt => {
-        const o = document.createElement('option');
-        o.value = opt.value;
-        o.text = opt.text;
-        select.appendChild(o);
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.text;
+        select.appendChild(option);
     });
 
-    // intentar restaurar selección previa: buscar por value o por texto (solo si useOld=true)
+    // restaurar valor anterior si existe
     if (oldCond) {
-        let encontrado = false;
         for (let i = 0; i < select.options.length; i++) {
-            if (select.options[i].value === oldCond || select.options[i].text === oldCond) {
+            if (select.options[i].value === oldCond) {
                 select.selectedIndex = i;
-                encontrado = true;
                 break;
             }
         }
-        if (!encontrado) {
-            // si old no coincide, mantener la primera opción (Seleccione...)
-            select.selectedIndex = 0;
-        }
     }
 }
+
 
 // Inicializar en carga y al cambiar tipo de comprobante
 document.addEventListener('DOMContentLoaded', function () {
