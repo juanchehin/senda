@@ -32,17 +32,24 @@ class Cliente extends Model
         return $this->hasMany(Factura::class);
     }
 
-    public function getCondicionArcaTextoAttribute()
+    public function getCondicionIvaTextoAttribute()
     {
-        return match ($this->condicion_arca) {
-            'RI' => 'Responsable Inscripto',
-            'EX' => 'Exento',
-            'NR' => 'No Responsable',
-            'CF' => 'Consumidor Final',
-            'MT' => 'Responsable Monotributo',
-            default => '-',
+        return match ($this->condicion_iva) {
+            'RI'   => 'Responsable Inscripto',
+            'MT'   => 'Responsable Monotributo',
+            'MS'   => 'Monotributista Social',
+            'MTIP' => 'Monotributista Trabajador Independiente Promovido',
+            'CF'   => 'Consumidor Final',
+            'EX'   => 'IVA Sujeto Exento',
+            'NC'   => 'Sujeto No Categorizado',
+            'PE'   => 'Proveedor del Exterior',
+            'CE'   => 'Cliente del Exterior',
+            'IL'   => 'IVA Liberado - Ley N° 19.640',
+            'NA'   => 'IVA No Alcanzado',
+            default => $this->condicion_iva,
         };
     }
+
 
     public function getCondicionIibbTextoAttribute()
     {

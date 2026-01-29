@@ -138,7 +138,7 @@
                 <td>{{ $cliente->id }}</td>
                 <td>{{ $cliente->cuit }}</td>
                 <td>{{ $cliente->razon_social }}</td>
-                <td>{{ $cliente->condicion_arca_texto }}</td>
+                <td>{{ $cliente->condicion_iva_texto }}</td>
                 <td>{{ $cliente->condicion_iibb_texto }}</td>
 
                 <td>
