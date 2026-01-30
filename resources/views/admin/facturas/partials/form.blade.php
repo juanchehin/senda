@@ -692,10 +692,19 @@ function recalcular() {
     });
 
     // ===== IMPORTE TOTAL FINAL =====
-    const totalInput = document.getElementById('importe_total');
-    if (totalInput) {
-        totalInput.value = importeTotal.toFixed(2);
+    // Total SOLO de ítems (con IVA)
+    let totalItemsInput = document.getElementById('importe_total_items');
+    if (!totalItemsInput) {
+        totalItemsInput = document.createElement('input');
+        totalItemsInput.type = 'hidden';
+        totalItemsInput.id = 'importe_total_items';
+        document.body.appendChild(totalItemsInput);
     }
+
+    totalItemsInput.value = importeTotal.toFixed(2);
+
+    // Recalcular total final
+    recalcularImporteTotalFinal();
 
     recalcularBaseImpIIBB();
 
@@ -907,7 +916,29 @@ function calcularTotalOtrosTributos() {
     if (totalInput) {
         totalInput.value = total.toFixed(2);
     }
+
+    recalcularImporteTotalFinal();
+
 }
+
+function recalcularImporteTotalFinal() {
+
+    const totalItems = parseFloat(
+        document.getElementById('importe_total_items')?.value
+    ) || 0;
+
+    const otrosTributos = parseFloat(
+        document.getElementById('importe_total_otros_tributos')?.value
+    ) || 0;
+
+    const totalFinal = totalItems + otrosTributos;
+
+    const totalInput = document.getElementById('importe_total');
+    if (totalInput) {
+        totalInput.value = totalFinal.toFixed(2);
+    }
+}
+
 
 function actualizarCampoDolar() {
 
