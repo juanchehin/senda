@@ -356,7 +356,7 @@
                     id="percepcion_iibb_detalle"
                     name="percepcion_iibb_detalle"
                     class="form-control"
-                    value="">
+                    value="Percepcion IIBB CM">
             </td>
             <td>
                 <input type="number"
