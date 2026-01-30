@@ -383,33 +383,60 @@
 
     </tbody>
 </table>
-
 {{-- ============================
      IMPORTE TOTAL (otros tributos)
    ============================ --}}
 <div class="row mt-4">
-    <div class="col-md-4 offset-md-8">
+
+    {{-- Columna izquierda --}}
+    <div class="col-md-6">
         <div class="form-group">
-            <label for="importe_total_otros_tributos">Subtotal Otros Tributos</label>
-            <input type="text" id="importe_total_otros_tributos" name="importe_total_otros_tributos"
-                   class="form-control" readonly>
+            <label for="base_imp_iibb">
+                Base Imponible de Percepción de Ingresos Brutos
+            </label>
+            <input type="text"
+                   id="base_imp_iibb"
+                   name="base_imp_iibb"
+                   class="form-control"
+                   readonly>
         </div>
+    </div>
+
+    {{-- Columna derecha --}}
+    <div class="col-md-6">
+
+        <div class="form-group">
+            <label for="importe_total_otros_tributos">
+                Subtotal Otros Tributos
+            </label>
+            <input type="text"
+                   id="importe_total_otros_tributos"
+                   name="importe_total_otros_tributos"
+                   class="form-control"
+                   readonly>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="importe_total">
+                Importe Total
+            </label>
+            <input type="text"
+                   id="importe_total"
+                   name="importe_total"
+                   class="form-control"
+                   readonly>
+        </div>
+
     </div>
 </div>
 
+{{--
 
-{{-- ============================
-     IMPORTE TOTAL
-   ============================ --}}
-<div class="row mt-4">
-    <div class="col-md-4 offset-md-8">
-        <div class="form-group">
-            <label for="importe_total">Importe Total</label>
-            <input type="text" id="importe_total" name="importe_total"
-                   class="form-control" readonly>
-        </div>
-    </div>
-</div>
+============================
+     SCRIPTS
+   ============================
+
+--}}
 
 <script>
 let fila = 0;
@@ -559,6 +586,39 @@ document.getElementById('agregar-item').addEventListener('click', function () {
     }, 50);
 });
 
+/* ============================================================
+
+   ============================================================ */
+function recalcularBaseImpIIBB() {
+    let totalBase = 0;
+
+    document.querySelectorAll('#items-body tr').forEach(row => {
+        const cantidad = parseFloat(row.querySelector('.item-cantidad')?.value) || 0;
+        const precio   = parseFloat(row.querySelector('.item-precio')?.value) || 0;
+        const bonifPct = parseFloat(row.querySelector('.item-bonif')?.value) || 0;
+
+        const subtotal = cantidad * precio;
+        const descuento = subtotal * (bonifPct / 100);
+        const totalItem = subtotal - descuento;
+
+        totalBase += totalItem;
+    });
+
+    const inputBaseIibb = document.getElementById('base_imp_iibb');
+    if (inputBaseIibb) {
+        inputBaseIibb.value = totalBase.toFixed(2);
+    }
+}
+
+document.addEventListener('input', function (e) {
+    if (
+        e.target.classList.contains('item-cantidad') ||
+        e.target.classList.contains('item-precio') ||
+        e.target.classList.contains('item-bonif')
+    ) {
+        recalcularBaseImpIIBB();
+    }
+});
 
 // =============
     // Cargar cotización dólar mayorista desde API
@@ -636,6 +696,9 @@ function recalcular() {
     if (totalInput) {
         totalInput.value = importeTotal.toFixed(2);
     }
+
+    recalcularBaseImpIIBB();
+
 }
 
 /* ============================================================
