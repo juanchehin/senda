@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 use App\Services\Afip\AfipService;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use SimpleSoftwareIO\QrCode\Generator;
+
 
 class FacturaController extends Controller
 {
@@ -468,52 +471,79 @@ class FacturaController extends Controller
         $factura = Factura::with('cliente', 'items')->findOrFail($id);
 
         $empresa = (object)[
-            'razon_social' => 'SECAR INGENIERIA ELECTRICA SRL',
-            'cuit' => '30-XXXXXXXX-X',
-            'direccion' => 'Mitre 751 - San Miguel de Tucumán',
-            'condicion_iva' => 'Responsable Inscripto',
-            'iibb' => '30-XXXXXXXX-X',
+            'razon_social'       => 'SECAR INGENIERIA ELECTRICA SRL',
+            'cuit'               => '30615136065',
+            'direccion'          => 'Mitre 751 - San Miguel de Tucumán',
+            'condicion_iva'      => 'Responsable Inscripto',
+            'iibb'               => '30615136065',
             'inicio_actividades' => '01/01/2010',
         ];
 
+        $fechaEmision = optional($factura->fecha_emision)->format('Y-m-d');
+        $cliente = $factura->cliente;
 
-        // ====== CAMPOS SEGUROS (reemplazo con "-") ======
-        $cuitEmisor        = $factura->cuit_emisor ?? "-";
-        $puntoVenta        = $factura->punto_venta ?? "-";
-        $tipoCmpCodigo     = $factura->tipo_comprobante_codigo ?? "-";
-        $numComprobante    = $factura->numero_comprobante ?? "-";
-        $importeTotal      = $factura->importe_total ?? "-";
-        $moneda            = $factura->moneda ?? "-";
-        $fechaEmision      = $factura->fecha_emision ?? "-";
-        $cae               = $factura->cae ?? "-";
-        $cuitReceptor      = $factura->cliente->cuit ?? "-";
+        // CUIT EMISOR REAL (string, sin guiones)
+        $cuitEmisor = preg_replace('/\D/', '', '30615136065'); //
 
-        // ====== QR AFIP (con valores seguros) ======
         $qrData = [
             "ver"        => 1,
-            "fecha"      => $fechaEmision,
-            "cuit"       => $cuitEmisor,
-            "ptoVta"     => $puntoVenta,
-            "tipoCmp"    => $tipoCmpCodigo,
-            "nroCmp"     => $numComprobante,
-            "importe"    => $importeTotal,
-            "moneda"     => $moneda,
+            "fecha"      => \Carbon\Carbon::parse($factura->fecha_emision)->format('Y-m-d'),
+
+            // CUIT EMISOR (STRING, SIN CAST A INT)
+            "cuit"       => preg_replace('/\D/', '', '30615136065'),
+
+            "ptoVta"     => (int) $factura->punto_venta,
+
+            // Factura B = 6
+            "tipoCmp"    => $factura->tipo_comprobante === 'A' ? 1 : 6,
+
+            // 👇 CLAVE: USAR EL ID
+            "nroCmp"     => (int) $factura->id,
+
+            "importe"    => (float) $factura->importe_total,
+            "moneda"     => "PES",
             "ctz"        => 1,
-            "tipoDocRec" => 80,
-            "nroDocRec"  => $cuitReceptor,
+
+            "tipoDocRec" => $cliente ? 80 : 99,
+            "nroDocRec"  => $cliente && $cliente->cuit
+                                ? preg_replace('/\D/', '', $cliente->cuit)
+                                : "0",
+
+            // 👇 ESTO SÍ ES EL CAE
             "tipoCodAut" => "E",
-            "codAut"     => $cae
+            "codAut"     => (string) $factura->cae,
         ];
 
-        $qrBase64 = base64_encode(json_encode($qrData));
-        $urlQr = "https://www.afip.gob.ar/fe/qr/?p=" . $qrBase64;
 
-        // PDF
-        $pdf = \PDF::loadView('admin.facturas.pdf', compact('factura','empresa', 'urlQr'));
 
-        // 👉 Ya no se valida el estado
+        $qrData = array_filter($qrData, fn($v) => $v !== null);
+
+
+        $qrBase64 = base64_encode(json_encode($qrData, JSON_UNESCAPED_UNICODE));
+        $afipUrl = "https://www.afip.gob.ar/fe/qr/?p={$qrBase64}";
+
+        // URL generadora del QR
+        $qrRemoteUrl = "https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=" . urlencode($afipUrl);
+
+        // 👉 convertir a base64 (CLAVE)
+        $qrImage = null;
+        $qrContent = @file_get_contents($qrRemoteUrl);
+
+        if ($qrContent !== false) {
+            $qrImage = base64_encode($qrContent);
+        }
+
+        $pdf = \PDF::loadView(
+            'admin.facturas.pdf',
+            compact('factura', 'empresa', 'qrImage')
+        );
+
+
+
         return $pdf->stream("Factura-{$factura->id}.pdf");
     }
+
+
 
 
     private function firmarXML($xmlPath)

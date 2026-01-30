@@ -338,7 +338,6 @@ td {
 
     </table>
 </div>
-
 {{-- ================= QR + CAE ================= --}}
 <div style="margin-top:25px;">
 
@@ -347,13 +346,22 @@ td {
 
             {{-- QR --}}
             <td style="width:15%; vertical-align:top;">
-                <img src="{{ $urlQr }}" style="width:90px;">
+                @if(!empty($factura->cae) && !empty($qrImage))
+                    <img
+                        src="data:image/png;base64,{{ $qrImage }}"
+                        style="width:90px;"
+                        alt="QR AFIP"
+                    >
+                @endif
             </td>
 
             {{-- ARCA + TEXTO --}}
             <td style="width:45%; vertical-align:top; padding-left:10px;">
                 <div style="font-weight:bold; font-size:14px;">ARCA</div>
-                <div style="font-size:9px;">AGENCIA DE RECAUDACIÓN<br>Y CONTROL ADUANERO</div>
+                <div style="font-size:9px;">
+                    AGENCIA DE RECAUDACIÓN<br>
+                    Y CONTROL ADUANERO
+                </div>
 
                 <div style="margin-top:6px; font-style:italic; font-weight:bold;">
                     Comprobante Autorizado
@@ -375,13 +383,15 @@ td {
                     <tr>
                         <td class="text-right" style="width:55%;"><b>CAE N°:</b></td>
                         <td class="text-left" style="padding-left:6px;">
-                            {{ $factura->cae }}
+                            {{ $factura->cae ?? '-' }}
                         </td>
                     </tr>
                     <tr>
                         <td class="text-right"><b>Fecha de Vto. de CAE:</b></td>
                         <td class="text-left" style="padding-left:6px;">
-                            {{ \Carbon\Carbon::parse($factura->vto_cae)->format('d/m/Y') }}
+                            {{ $factura->vto_cae
+                                ? \Carbon\Carbon::parse($factura->vto_cae)->format('d/m/Y')
+                                : '-' }}
                         </td>
                     </tr>
                 </table>
