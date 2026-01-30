@@ -395,12 +395,35 @@
                 Base Imponible de Percepción de Ingresos Brutos
             </label>
             <input type="text"
-                   id="base_imp_iibb"
-                   name="base_imp_iibb"
-                   class="form-control"
-                   readonly>
+                id="base_imp_iibb"
+                name="base_imp_iibb"
+                class="form-control"
+                readonly>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="subtotal_sin_iva">
+                Subtotal s/IVA
+            </label>
+            <input type="text"
+                id="subtotal_sin_iva"
+                name="subtotal_sin_iva"
+                class="form-control"
+                readonly>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="subtotal_con_iva">
+                Subtotal c/IVA
+            </label>
+            <input type="text"
+                id="subtotal_con_iva"
+                name="subtotal_con_iva"
+                class="form-control"
+                readonly>
         </div>
     </div>
+
 
     {{-- Columna derecha --}}
     <div class="col-md-6">
@@ -429,6 +452,9 @@
 
     </div>
 </div>
+
+<input type="hidden" id="importe_total_items" name="importe_total_items" value="0">
+
 
 {{--
 
@@ -641,14 +667,16 @@ document.addEventListener('input', function (e) {
 function recalcular() {
 
     const filas = document.querySelectorAll('#items-body tr');
-    let importeTotal = 0;
+
+    let totalSinIva = 0;
+    let totalConIva = 0;
 
     filas.forEach(fila => {
 
-        const cantidad = parseFloat(fila.querySelector('.item-cantidad')?.value) || 0;
-        const precio = parseFloat(fila.querySelector('.item-precio')?.value) || 0;
+        const cantidad  = parseFloat(fila.querySelector('.item-cantidad')?.value) || 0;
+        const precio    = parseFloat(fila.querySelector('.item-precio')?.value) || 0;
         const bonifPorc = parseFloat(fila.querySelector('.item-bonif')?.value) || 0;
-        const iva = parseFloat(fila.querySelector('.item-iva')?.value) || 0;
+        const iva       = parseFloat(fila.querySelector('.item-iva')?.value) || 0;
 
         // ===== BONIFICACIÓN =====
         const bonifUnit = precio * (bonifPorc / 100);
@@ -656,15 +684,19 @@ function recalcular() {
 
         // ===== SUBTOTALES =====
         const subtotalSinIva = cantidad * precioFinalUnit;
-        const ivaImporte = subtotalSinIva * (iva / 100);
+        const ivaImporte     = subtotalSinIva * (iva / 100);
         const subtotalConIva = subtotalSinIva + ivaImporte;
 
-        // ===== ACUMULAR TOTAL =====
-        if (!isNaN(subtotalConIva)) {
-            importeTotal += subtotalConIva;
+        // ===== ACUMULAR TOTALES =====
+        if (!isNaN(subtotalSinIva)) {
+            totalSinIva += subtotalSinIva;
         }
 
-        // ===== ASIGNAR A INPUTS (SEGURO) =====
+        if (!isNaN(subtotalConIva)) {
+            totalConIva += subtotalConIva;
+        }
+
+        // ===== ASIGNAR A INPUTS DE LA FILA =====
         const bonifInput = fila.querySelector('.item-bonif-importe');
         if (bonifInput) {
             bonifInput.value = bonifUnit.toFixed(2);
@@ -673,11 +705,6 @@ function recalcular() {
         const subtotalInput = fila.querySelector('.item-subtotal');
         if (subtotalInput) {
             subtotalInput.value = subtotalConIva.toFixed(2);
-        }
-
-        const bonifHidden = fila.querySelector('.bonif-importe-hidden');
-        if (bonifHidden) {
-            bonifHidden.value = bonifUnit.toFixed(2);
         }
 
         const sinIvaHidden = fila.querySelector('.subtotal-sin-iva-hidden');
@@ -691,24 +718,30 @@ function recalcular() {
         }
     });
 
-    // ===== IMPORTE TOTAL FINAL =====
-    // Total SOLO de ítems (con IVA)
-    let totalItemsInput = document.getElementById('importe_total_items');
-    if (!totalItemsInput) {
-        totalItemsInput = document.createElement('input');
-        totalItemsInput.type = 'hidden';
-        totalItemsInput.id = 'importe_total_items';
-        document.body.appendChild(totalItemsInput);
+    // ===== SUBTOTALES GENERALES =====
+    const sinIvaInput = document.getElementById('subtotal_sin_iva');
+    if (sinIvaInput) {
+        sinIvaInput.value = totalSinIva.toFixed(2);
     }
 
-    totalItemsInput.value = importeTotal.toFixed(2);
+    const conIvaInput = document.getElementById('subtotal_con_iva');
+    if (conIvaInput) {
+        conIvaInput.value = totalConIva.toFixed(2);
+    }
 
-    // Recalcular total final
-    recalcularImporteTotalFinal();
+    // ===== TOTAL ÍTEMS (CON IVA) – INPUT HIDDEN YA EXISTENTE =====
+    const totalItemsInput = document.getElementById('importe_total_items');
+    if (totalItemsInput) {
+        totalItemsInput.value = totalConIva.toFixed(2);
+    }
 
+    // ===== BASE IIBB =====
     recalcularBaseImpIIBB();
 
+    // ===== TOTAL FINAL =====
+    recalcularImporteTotalFinal();
 }
+
 
 /* ============================================================
    EVENTOS DE RECALCULAR Y ELIMINAR
@@ -905,23 +938,23 @@ document.getElementById('percepcion_iibb_alicuota')?.addEventListener('input', (
 
 function calcularTotalOtrosTributos() {
 
-    const iva = parseFloat(document.getElementById('percepcion_iva_importe')?.value) || 0;
+    const iva  = parseFloat(document.getElementById('percepcion_iva_importe')?.value) || 0;
     const iibb = parseFloat(document.getElementById('percepcion_iibb_importe')?.value) || 0;
 
     const total = iva + iibb;
-
-    console.log("total : ", total)
 
     const totalInput = document.getElementById('importe_total_otros_tributos');
     if (totalInput) {
         totalInput.value = total.toFixed(2);
     }
 
+    // 🔑 IMPORTANTE
     recalcularImporteTotalFinal();
-
 }
 
+
 function recalcularImporteTotalFinal() {
+    console.log('recalcularImporteTotalFinal EJECUTADA');
 
     const totalItems = parseFloat(
         document.getElementById('importe_total_items')?.value
@@ -931,13 +964,22 @@ function recalcularImporteTotalFinal() {
         document.getElementById('importe_total_otros_tributos')?.value
     ) || 0;
 
+    console.log('otrosTributos ', otrosTributos);
+    console.log('totalItems ', totalItems);
+
+
     const totalFinal = totalItems + otrosTributos;
 
+    console.log('TtotalFinal ', totalFinal);
+
     const totalInput = document.getElementById('importe_total');
+
+
     if (totalInput) {
         totalInput.value = totalFinal.toFixed(2);
     }
 }
+
 
 
 function actualizarCampoDolar() {
