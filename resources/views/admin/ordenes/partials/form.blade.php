@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-3">
-        <label>Número de OC</label>
+        <label>Número de OP</label>
         <input type="number" name="numero_oc" class="form-control" value="{{ old('numero_oc', $orden->numero_oc ?? '') }}" required>
     </div>
 

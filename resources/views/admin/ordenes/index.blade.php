@@ -14,11 +14,11 @@
 
     <div class="row">
 
-        {{-- Buscar por número de OC --}}
+        {{-- Buscar por número de OP --}}
         <div class="col-md-3">
-            <label>Número OC</label>
+            <label>Número OP</label>
             <input type="text" name="numero" class="form-control"
-                   value="{{ request('numero') }}" placeholder="Ej: OC-00125">
+                   value="{{ request('numero') }}" placeholder="Ej: OP-00125">
         </div>
 
         {{-- Buscar por proveedor --}}
@@ -62,7 +62,7 @@
     <thead>
         <tr>
             <th>#</th>
-            <th>Número OC</th>
+            <th>Número OP</th>
             <th>Proveedor</th>
             <th>Fecha</th>
             <th>Total</th>
