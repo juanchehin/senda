@@ -9,31 +9,73 @@
         <input type="date" name="fecha" class="form-control" value="{{ old('fecha', $orden->fecha ?? '') }}" required>
     </div>
 
+    {{-- Razón Social --}}
     <div class="col-md-6">
-        <label>Proveedor</label>
-        <input type="text" name="proveedor" class="form-control" value="{{ old('proveedor', $orden->proveedor ?? '') }}" required>
-    </div>
-</div>
+        <div class="form-group">
+            <label for="razon_social">Razón Social</label>
 
+            <div class="position-relative">
+                <input type="text"
+                    name="razon_social"
+                    id="razon_social"
+                    value="{{ old('razon_social') }}"
+                    class="form-control"
+                    autocomplete="off"
+                    required>
+
+                {{-- ID cliente --}}
+                <input type="hidden"
+                    name="cliente_id"
+                    id="cliente_id"
+                    value="{{ old('cliente_id') }}">
+
+                {{-- dropdown --}}
+                <div id="dropdown-clientes"
+                    class="list-group position-absolute w-100 shadow"
+                    style="z-index:9999; max-height:240px; overflow-y:auto; display:none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 <div class="row mt-3">
     <div class="col-md-3">
         <label>CUIT</label>
-        <input type="text" name="cuit" class="form-control" maxlength="11" value="{{ old('cuit', $orden->cuit ?? '') }}" required>
+        <input type="text"
+               id="cuit"
+               name="cuit"
+               class="form-control"
+               maxlength="11"
+               value="{{ old('cuit', $orden->cuit ?? '') }}"
+               required>
     </div>
 
     <div class="col-md-3">
         <label>Dirección</label>
-        <input type="text" name="direccion" class="form-control" value="{{ old('direccion', $orden->direccion ?? '') }}">
+        <input type="text"
+               id="direccion"
+               name="direccion"
+               class="form-control"
+               value="{{ old('direccion', $orden->direccion ?? '') }}">
     </div>
 
     <div class="col-md-3">
         <label>Teléfono</label>
-        <input type="text" name="telefono" class="form-control" value="{{ old('telefono', $orden->telefono ?? '') }}">
+        <input type="text"
+               id="telefono"
+               name="telefono"
+               class="form-control"
+               value="{{ old('telefono', $orden->telefono ?? '') }}">
     </div>
 
     <div class="col-md-3">
         <label>Email</label>
-        <input type="email" name="email" class="form-control" value="{{ old('email', $orden->email ?? '') }}">
+        <input type="email"
+               id="email"
+               name="email"
+               class="form-control"
+               value="{{ old('email', $orden->email ?? '') }}">
     </div>
 </div>
 
@@ -224,4 +266,112 @@
     } else {
         calcularTotales();
     }
+</script>
+
+<script>
+/* ============================================================
+   AUTOCOMPLETADO CLIENTES – ÓRDENES
+   ============================================================ */
+
+    const inputRazon = document.getElementById('razon_social');
+    const dropdownClientes = document.getElementById('dropdown-clientes');
+    const inputClienteId = document.getElementById('cliente_id');
+
+    // campos opcionales
+    const inputCuit      = document.getElementById('cuit');
+    const inputDireccion = document.getElementById('direccion');
+    const inputTelefono  = document.getElementById('telefono');
+    const inputEmail     = document.getElementById('email');
+
+
+    let debounceTimer = null;
+
+    function ocultarDropdown() {
+        dropdownClientes.style.display = 'none';
+        dropdownClientes.innerHTML = '';
+    }
+
+    function mostrarDropdown() {
+        dropdownClientes.style.display = 'block';
+    }
+
+    function renderSugerencias(clientes) {
+        dropdownClientes.innerHTML = '';
+
+        if (!clientes.length) {
+            dropdownClientes.innerHTML =
+                `<div class="list-group-item text-muted">Sin resultados</div>`;
+            mostrarDropdown();
+            return;
+        }
+
+        clientes.forEach(cli => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action';
+
+            item.innerHTML = `
+                <strong>${cli.razon_social ?? ''}</strong>
+                <br>
+                <small class="text-muted">${cli.cuit ?? ''}</small>
+            `;
+
+            item.addEventListener('click', () => {
+
+                inputRazon.value     = cli.razon_social ?? '';
+                inputClienteId.value = cli.id ?? '';
+
+                if (inputCuit)      inputCuit.value      = cli.cuit ?? '';
+                if (inputDireccion) inputDireccion.value = cli.direccion ?? '';
+                if (inputTelefono)  inputTelefono.value  = cli.telefono ?? '';
+                if (inputEmail)     inputEmail.value     = cli.email ?? '';
+
+                ocultarDropdown();
+            });
+
+
+            dropdownClientes.appendChild(item);
+        });
+
+        mostrarDropdown();
+    }
+
+    async function buscarClientes(q) {
+        const url = `{{ route('clientes.buscar') }}?q=${encodeURIComponent(q)}`;
+
+        const resp = await fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        if (!resp.ok) return [];
+        return await resp.json();
+    }
+
+    inputRazon.addEventListener('input', () => {
+        inputClienteId.value = '';
+
+        const q = inputRazon.value.trim();
+        if (q.length < 2) {
+            ocultarDropdown();
+            return;
+        }
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(async () => {
+            const clientes = await buscarClientes(q);
+            renderSugerencias(clientes);
+        }, 250);
+    });
+
+    // click afuera
+    document.addEventListener('click', e => {
+        if (!dropdownClientes.contains(e.target) && !inputRazon.contains(e.target)) {
+            ocultarDropdown();
+        }
+    });
+
+    // ESC
+    inputRazon.addEventListener('keydown', e => {
+        if (e.key === 'Escape') ocultarDropdown();
+    });
 </script>
