@@ -84,63 +84,70 @@ class FacturaController extends Controller
     public function store(Request $request)
     {
         // =============================
-        // VALIDACIÓN
+        // VALIDACIÓN (logueada)
         // =============================
-        $validated = $request->validate([
+        try {
 
-            // CLIENTE
-            'razon_social'   => 'required|string|max:255',
-            'cuit'           => 'required|digits:11',
-            'condicion_iva'  => 'required|string|max:50',
-            'direccion'      => 'required|string|max:255',
-            'email'          => 'nullable|email|max:255',
+            $validated = $request->validate([
 
-            // FACTURA
-            'tipo_comprobante' => 'required|in:A,B',
-            'fecha_emision'    => 'required|date',
-            'concepto'         => 'required|in:1,2,3',
-            'condicion_venta'  => 'required|string|max:100',
-            'moneda'           => 'required|in:ARS,USD',
-            'valor_dolar'      => 'required_if:moneda,USD|numeric|min:0',
+                // CLIENTE
+                'razon_social'  => 'required|string|max:255',
+                'cuit'          => 'required|regex:/^\d{11}$/',
+                'condicion_iva' => 'required|string|max:50',
+                'direccion'     => 'required|string|max:255',
+                'email'         => 'nullable|email|max:255',
 
-            // SERVICIOS
-            'fecha_desde'      => 'nullable|date',
-            'fecha_hasta'      => 'nullable|date',
-            'vencimiento_pago' => 'nullable|date',
+                // FACTURA
+                'tipo_comprobante' => 'required|in:A,B',
+                'fecha_emision'    => 'required|date',
+                'concepto'         => 'required|in:1,2,3',
+                'condicion_venta'  => 'required|string|max:100',
+                'moneda'           => 'required|in:ARS,USD',
+                'valor_dolar'      => 'nullable|numeric|min:0',
 
-            // ITEMS
-            'items'                       => 'required|array|min:1',
-            'items.*.codigo'              => 'required|string',
-            'items.*.descripcion'         => 'required|string|max:255',
-            'items.*.cantidad'            => 'required|numeric|min:1',
-            'items.*.unidad'              => 'required|string',
-            'items.*.precio'              => 'required|numeric|min:0',
+                // SERVICIOS
+                'fecha_desde'      => 'nullable|date',
+                'fecha_hasta'      => 'nullable|date',
+                'vencimiento_pago' => 'nullable|date',
 
-            // IVA SIEMPRE NUMÉRICO
-            'items.*.iva'                 => 'required|numeric|min:0',
+                // ITEMS
+                'items' => 'required|array|min:1',
+                'items.*.codigo'                  => 'required|string',
+                'items.*.descripcion'             => 'required|string|max:255',
+                'items.*.cantidad'                => 'required|numeric|min:1',
+                'items.*.unidad'                  => 'required|numeric|min:1',
+                'items.*.precio'                  => 'required|numeric|min:0',
+                'items.*.iva'                     => 'required|numeric|min:0',
+                'items.*.bonificacion_porcentaje' => 'nullable|numeric|min:0|max:100',
+                'items.*.bonificacion_importe'    => 'required|numeric|min:0',
+                'items.*.subtotal_sin_iva'         => 'required|numeric|min:0',
+                'items.*.subtotal_con_iva'         => 'required|numeric|min:0',
 
-            // BONIFICACIÓN
-            'items.*.bonificacion_porcentaje' => 'nullable|numeric|min:0|max:100',
+                // REMITOS
+                'remitos' => 'nullable|array',
+                'remitos.*.pto_venta'     => 'nullable|numeric|min:1',
+                'remitos.*.comprobante'   => 'nullable|numeric|min:1',
+                'remitos.*.fecha_emision' => 'nullable|date',
+            ]);
 
-            // HIDDEN DEL JS — ¡OBLIGATORIOS!
-            'items.*.bonificacion_importe' => 'required|numeric|min:0',
-            'items.*.subtotal_sin_iva'     => 'required|numeric|min:0',
-            'items.*.subtotal_con_iva'     => 'required|numeric|min:0',
+        } catch (\Illuminate\Validation\ValidationException $e) {
 
-            // REMITOS
-            'remitos' => 'nullable|array',
-            'remitos.*.pto_venta'    => 'nullable|numeric|min:1',
-            'remitos.*.comprobante'  => 'nullable|numeric|min:1',
-            'remitos.*.fecha_emision'=> 'nullable|date',
-        ]);
+            Log::warning('Validación fallida al crear factura', [
+                'errors'  => $e->errors(),
+                'request' => $request->all(),
+            ]);
 
+            throw $e; // 👈 deja que Laravel redirija y muestre errores
+        }
+
+        // =============================
+        // TRANSACCIÓN
+        // =============================
         DB::beginTransaction();
 
         try {
 
-            // =============================
             // 1) CLIENTE
-            // =============================
             $cliente = Cliente::firstOrCreate(
                 ['cuit' => $validated['cuit']],
                 [
@@ -151,9 +158,7 @@ class FacturaController extends Controller
                 ]
             );
 
-            // =============================
-            // 2) CREAR FACTURA
-            // =============================
+            // 2) FACTURA
             $factura = new Factura();
             $factura->cliente_id       = $cliente->id;
             $factura->tipo_comprobante = $validated['tipo_comprobante'];
@@ -170,17 +175,12 @@ class FacturaController extends Controller
             $factura->fecha_hasta      = $validated['fecha_hasta'] ?? null;
             $factura->vencimiento_pago = $validated['vencimiento_pago'] ?? null;
 
-            /* =============================
-            PERCEPCIONES
-            ============================= */
-
-            // Percepción IVA
+            // PERCEPCIONES
             $factura->percepcion_iva_detalle   = $request->percepcion_iva_detalle ?? null;
             $factura->percepcion_iva_base      = $request->percepcion_iva_base ?? 0;
             $factura->percepcion_iva_alicuota  = $request->percepcion_iva_alicuota ?? 0;
             $factura->percepcion_iva_importe   = $request->percepcion_iva_importe ?? 0;
 
-            // Percepción Ingresos Brutos
             $factura->percepcion_iibb_detalle  = $request->percepcion_iibb_detalle ?? null;
             $factura->percepcion_iibb_base     = $request->percepcion_iibb_base ?? 0;
             $factura->percepcion_iibb_alicuota = $request->percepcion_iibb_alicuota ?? 0;
@@ -188,69 +188,44 @@ class FacturaController extends Controller
 
             $factura->importe_total_otros_tributos = $request->importe_total_otros_tributos ?? 0;
 
-            // =============================
-            // GUARDAR
-            // =============================
             $factura->save();
 
-
-            // =============================
             // 3) ITEMS
-            // =============================
             $subtotal_general  = 0;
             $total_iva_general = 0;
 
-
             foreach ($validated['items'] as $item) {
 
-                $cantidad = (float) $item['cantidad'];
-                $precio   = (float) $item['precio'];
-                $iva      = (float) $item['iva'];
-                $bonif    = (float) $item['bonificacion_porcentaje'];
+                $iva_importe = $item['subtotal_sin_iva'] * ($item['iva'] / 100);
 
-                // CALCULOS
-                // $subtotal_bruto      = $cantidad * $precio;
-                $bonif_importe       = $item['bonificacion_importe'];
-                $subtotal_sin_iva    = $item['subtotal_sin_iva'];
-                $subtotal_con_iva    = $item['subtotal_con_iva'];
-                $iva_importe         = $subtotal_sin_iva * ($iva / 100);
-                $unidad              = $item['unidad'];
-
-                // GUARDAR ITEM
                 FacturaItem::create([
                     'factura_id'              => $factura->id,
                     'codigo'                  => $item['codigo'],
-                    'unidad'                  => $unidad,
+                    'unidad'                  => $item['unidad'],
                     'descripcion'             => $item['descripcion'],
-                    'cantidad'                => $cantidad,
-                    'precio_unitario'         => $precio,
-                    'iva'                     => $iva,
-                    'bonificacion_porcentaje' => $bonif,
-                    'bonificacion_importe'    => $bonif_importe,
-                    'subtotal_sin_iva'        => $subtotal_sin_iva,
-                    'subtotal_con_iva'        => $subtotal_con_iva,
-                    'subtotal'                => $subtotal_con_iva,
+                    'cantidad'                => $item['cantidad'],
+                    'precio_unitario'         => $item['precio'],
+                    'iva'                     => $item['iva'],
+                    'bonificacion_porcentaje' => $item['bonificacion_porcentaje'] ?? 0,
+                    'bonificacion_importe'    => $item['bonificacion_importe'],
+                    'subtotal_sin_iva'        => $item['subtotal_sin_iva'],
+                    'subtotal_con_iva'        => $item['subtotal_con_iva'],
+                    'subtotal'                => $item['subtotal_con_iva'],
                 ]);
 
-                // ACUMULADORES
-                $subtotal_general  += $subtotal_sin_iva;
+                $subtotal_general  += $item['subtotal_sin_iva'];
                 $total_iva_general += $iva_importe;
             }
 
-            // =============================
-            // 4) TOTALIZAR FACTURA
-            // =============================
+            // 4) TOTALIZAR
             $factura->subtotal      = $subtotal_general;
             $factura->total_iva     = $total_iva_general;
             $factura->importe_total = $subtotal_general + $total_iva_general;
             $factura->save();
 
-            // =============================
             // 5) REMITOS
-            // =============================
             if (!empty($validated['remitos'])) {
                 foreach ($validated['remitos'] as $remito) {
-
                     if (
                         empty($remito['pto_venta']) &&
                         empty($remito['comprobante']) &&
@@ -278,11 +253,17 @@ class FacturaController extends Controller
 
             DB::rollBack();
 
+            Log::error('Error al guardar factura', [
+                'mensaje' => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
+
             return back()
                 ->with('error', 'Error al guardar la factura: ' . $e->getMessage())
                 ->withInput();
         }
     }
+
 
 
 
@@ -379,18 +360,27 @@ class FacturaController extends Controller
                     $cae = $respuestaDetalle->CAE ?? null;
                     $vto = $respuestaDetalle->CAEFchVto ?? null;
 
-                    // 🔥 ACTUALIZAR FACTURA EN BD
+                    // 🔥 ESTE ES EL DATO QUE TE FALTABA
+                    $numeroAfip = $respuestaDetalle->CbteDesde ?? null;
+
+                    if (!$numeroAfip) {
+                        throw new \Exception('AFIP no devolvió el número de comprobante (CbteDesde)');
+                    }
+
+                    // ✅ ACTUALIZAR FACTURA EN BD (COMPLETO)
                     $factura->estado = "aprobada";
                     $factura->cae = $cae;
-                    $factura->vto_cae = $vto;
+                    $factura->vto_cae = \Carbon\Carbon::createFromFormat('Ymd', $vto);
+                    $factura->numero_comprobante_afip = $numeroAfip; // 👈 CLAVE
                     $factura->aprobado_por = Auth::id();
                     $factura->save();
 
-                    $mensajeUsuario = "Factura autorizada por AFIP. CAE: {$cae} (Venc: {$vto})";
+                    $mensajeUsuario = "Factura autorizada por AFIP. N° {$numeroAfip} - CAE: {$cae}";
 
-                    Log::info("✅ Factura autorizada por AFIP - CAE {$cae}", [
+                    Log::info("✅ Factura autorizada por AFIP", [
                         'factura_id' => $factura->id,
-                        'afip_response' => $afipResponse
+                        'numero_afip' => $numeroAfip,
+                        'cae' => $cae,
                     ]);
 
                     SystemLog::create([
@@ -399,13 +389,14 @@ class FacturaController extends Controller
                         'related_id' => $factura->id,
                         'related_type' => Factura::class,
                         'level' => 'info',
-                        'message' => "Factura autorizada. CAE {$cae}",
+                        'message' => "Factura autorizada AFIP N° {$numeroAfip} - CAE {$cae}",
                         'data' => $afipResponse,
                         'user_id' => Auth::id(),
                     ]);
 
                     return back()->with('success', $mensajeUsuario);
                 }
+
 
                 // --- 4) SI NO FUE AUTORIZADA ---
                 if ($respuestaDetalle && $respuestaDetalle->Resultado === "R") {

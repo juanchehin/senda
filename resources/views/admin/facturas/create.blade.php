@@ -10,6 +10,18 @@
     </div>
 @stop
 
+@if ($errors->any())
+    <div style="background:#f8d7da; padding:10px; margin-bottom:10px;">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+
+
 @section('content')
 
     {{-- Mensajes de éxito --}}
