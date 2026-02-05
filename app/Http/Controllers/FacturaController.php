@@ -470,53 +470,59 @@ class FacturaController extends Controller
             'inicio_actividades' => '01/01/2010',
         ];
 
-        $fechaEmision = optional($factura->fecha_emision)->format('Y-m-d');
+        // Verificación de datos AFIP obligatorios
+        if (empty($factura->numero_comprobante_afip) || empty($factura->cae)) {
+            abort(400, 'La factura aún no fue autorizada por AFIP');
+        }
+
         $cliente = $factura->cliente;
 
-        // CUIT EMISOR REAL (string, sin guiones)
-        $cuitEmisor = preg_replace('/\D/', '', '30615136065'); //
-
         $qrData = [
-            "ver"        => 1,
-            "fecha"      => \Carbon\Carbon::parse($factura->fecha_emision)->format('Y-m-d'),
+            "ver"     => 1,
+            "fecha"   => \Carbon\Carbon::parse($factura->fecha_emision)->format('Y-m-d'),
 
-            // CUIT EMISOR (STRING, SIN CAST A INT)
-            "cuit"       => preg_replace('/\D/', '', '30615136065'),
+            // CUIT emisor
+            "cuit" => (int) preg_replace('/\D/', '', $empresa->cuit),
 
-            "ptoVta"     => (int) $factura->punto_venta,
+            "ptoVta"  => (int) $factura->punto_venta,
 
-            // Factura B = 6
-            "tipoCmp"    => $factura->tipo_comprobante === 'A' ? 1 : 6,
+            // Tipo de comprobante AFIP
+            "tipoCmp" => $factura->tipo_comprobante === 'A' ? 1 : 6,
 
-            // 👇 CLAVE: USAR EL ID
-            "nroCmp"     => (int) $factura->id,
+            // ESTE ES EL DATO CLAVE CORRECTO
+            "nroCmp"  => (int) $factura->numero_comprobante_afip,
 
-            "importe"    => (float) $factura->importe_total,
-            "moneda"     => "PES",
-            "ctz"        => 1,
+            "importe" => round((float) $factura->importe_total, 2),
+
+            "moneda" => $factura->moneda === 'USD' ? 'DOL' : 'ARS',
+
+            "ctz"     => 1,
 
             "tipoDocRec" => $cliente ? 80 : 99,
-            "nroDocRec"  => $cliente && $cliente->cuit
-                                ? preg_replace('/\D/', '', $cliente->cuit)
-                                : "0",
 
-            // 👇 ESTO SÍ ES EL CAE
+            "nroDocRec" => (int) preg_replace('/\D/', '', $cliente->cuit),
+            "codAut"    => (int) $factura->cae,
+
+
             "tipoCodAut" => "E",
-            "codAut"     => (string) $factura->cae,
+
+            // CAE real
+            // "codAut" => (string) $factura->cae,
         ];
 
-
-
+        // Quitar nulos por seguridad
         $qrData = array_filter($qrData, fn($v) => $v !== null);
 
-
         $qrBase64 = base64_encode(json_encode($qrData, JSON_UNESCAPED_UNICODE));
+
+        // ESTE ES EL LINK CORRECTO Y DEFINITIVO
+        // $afipUrl = "https://servicioscf.afip.gob.ar/publico/comprobantes/cae.aspx?p={$qrBase64}";
         $afipUrl = "https://www.afip.gob.ar/fe/qr/?p={$qrBase64}";
 
-        // URL generadora del QR
+
+        // Generación remota del QR
         $qrRemoteUrl = "https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=" . urlencode($afipUrl);
 
-        // 👉 convertir a base64 (CLAVE)
         $qrImage = null;
         $qrContent = @file_get_contents($qrRemoteUrl);
 
@@ -529,12 +535,8 @@ class FacturaController extends Controller
             compact('factura', 'empresa', 'qrImage')
         );
 
-
-
-        return $pdf->stream("Factura-{$factura->id}.pdf");
+        return $pdf->stream("Factura-{$factura->numero_comprobante_afip}.pdf");
     }
-
-
 
 
     private function firmarXML($xmlPath)
