@@ -61,7 +61,7 @@
 
 <div class="col-md-4">
     <div class="form-group">
-        <label for="condicion_iibb">Condición Ingreso Bruto</label>
+        <label for="condicion_iibb">Condición IIBB</label>
         <select name="condicion_iibb" id="condicion_iibb" class="form-control" required>
             <option value="">Seleccione...</option>
 
