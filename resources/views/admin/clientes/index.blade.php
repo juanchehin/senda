@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Listado de Clientes')
+@section('title', 'Listado de socios comerciales')
 
 @section('content_header')
-    <h2>Listado de Clientes</h2>
+    <h2>Listado de socios comerciales</h2>
 @stop
 
 @section('content')
@@ -11,7 +11,7 @@
 <div class="d-flex gap-2 mb-3">
 
     <a href="{{ route('clientes.create') }}" class="btn btn-primary">
-        <i class="fas fa-user-plus"></i> Nuevo Cliente
+        <i class="fas fa-user-plus"></i> Nuevo SC
     </a>
 
     {{-- BOTÓN IMPORTAR EXCEL --}}
@@ -83,7 +83,7 @@
                    name="razon_social"
                    class="form-control"
                    value="{{ request('razon_social') }}"
-                   placeholder="Empresa / Cliente">
+                   placeholder="Empresa / SC">
         </div>
 
         <div class="col-md-3">
@@ -126,7 +126,7 @@
             <th>CUIT</th>
             <th>Razón Social</th>
             <th>Condición ARCA</th>
-            <th>Condición Ingresos Brutos</th>
+            <th>Condición IIBB</th>
             <th width="120">Acciones</th>
         </tr>
     </thead>
@@ -172,7 +172,7 @@
         @empty
             <tr>
                 <td colspan="6" class="text-center text-muted">
-                    No se encontraron clientes
+                    No se encontraron socios comerciales
                 </td>
             </tr>
         @endforelse
