@@ -293,17 +293,6 @@
 <div style="width:100%; border-bottom:1px solid #000; margin-top:8px;"></div>
 
 
-{{-- BLOQUE SIMPLE VACÍO --}}
-<table style="width:100%; border-collapse:collapse; margin-top:0px;">
-    <tr>
-        <td style="border:1px solid #000; height:12mm;"></td>
-        <td style="border:1px solid #000; height:12mm;"></td>
-        <td style="border:1px solid #000; height:12mm;"></td>
-        <td style="border:1px solid #000; height:12mm;"></td>
-        <td style="border:1px solid #000; height:12mm;"></td>
-    </tr>
-</table>
-
 
     {{-- FIRMA --}}
     <div style="
