@@ -83,10 +83,20 @@
     <div class="col-md-4">
         <label>Moneda</label>
         <select name="moneda" class="form-control" required>
-            <option value="ARS" {{ old('moneda', $orden->moneda ?? 'ARS') == 'ARS' ? 'selected' : '' }}>ARS - Peso Argentino</option>
-            <option value="USD" {{ old('moneda', $orden->moneda ?? '') == 'USD' ? 'selected' : '' }}>USD - Dólar Estadounidense</option>
+            <option value="ARS" {{ old('moneda', $orden->moneda ?? 'ARS') == 'ARS' ? 'selected' : '' }}>
+                ARS - Peso Argentino
+            </option>
+
+            <option value="USD_BILLETE" {{ old('moneda', $orden->moneda ?? '') == 'USD_BILLETE' ? 'selected' : '' }}>
+                USD - Billete
+            </option>
+
+            <option value="USD_DIVISA" {{ old('moneda', $orden->moneda ?? '') == 'USD_DIVISA' ? 'selected' : '' }}>
+                USD - Divisa
+            </option>
         </select>
     </div>
+
 
 
 
@@ -95,10 +105,6 @@
         <input type="text" name="condicion_compra" class="form-control" value="{{ old('condicion_compra', $orden->condicion_compra ?? '') }}" required>
     </div>
 
-    <div class="col-md-4">
-        <label>Solicitud de compra</label>
-        <input type="text" name="solicitud_compra" class="form-control" value="{{ old('solicitud_compra', $orden->solicitud_compra ?? '') }}">
-    </div>
 </div>
 
 <hr class="mt-4">
@@ -113,6 +119,7 @@
             <th>Cantidad</th>
             <th>Unidad</th>
             <th>Precio Unitario</th>
+            <th>IVA (%)</th>
             <th>Desc. (%)</th>
             <th>Fecha Entrega</th>
             <th>Total</th>
@@ -142,6 +149,14 @@
 
                 <td><input type="number" step="0.01" name="items[{{ $i }}][precio_unitario]" class="form-control"
                     value="{{ $item['precio_unitario'] ?? '' }}"></td>
+
+                <td>
+                    <input type="number" step="0.01"
+                        name="items[{{ $i }}][iva]"
+                        class="form-control"
+                        value="{{ $item['iva'] ?? 21 }}">
+                </td>
+
 
                 <td><input type="number" step="0.01" name="items[{{ $i }}][descuento]" class="form-control"
                     value="{{ $item['descuento'] ?? 0 }}"></td>
@@ -174,7 +189,7 @@
 
 <div class="row mt-3">
     <div class="col-md-6">
-        <label>Subtotal</label>
+        <label>Subtotal c/IVA</label>
         <input type="number" step="0.01" name="subtotal" class="form-control" value="{{ old('subtotal', $orden->subtotal ?? 0) }}" readonly>
     </div>
 
@@ -198,6 +213,7 @@
         + '  <td><input type="number" step="0.01" name="items['+row+'][cantidad]" class="form-control"></td>'
         + '  <td><input type="text" name="items['+row+'][unidad]" class="form-control"></td>'
         + '  <td><input type="number" step="0.01" name="items['+row+'][precio_unitario]" class="form-control"></td>'
+        + '  <td><input type="number" step="0.01" name="items['+row+'][iva]" class="form-control" value="21"></td>'
         + '  <td><input type="number" step="0.01" name="items['+row+'][descuento]" class="form-control" value="0"></td>'
         + '  <td><input type="date" name="items['+row+'][fecha_entrega]" class="form-control"></td>'
         + '  <td><input type="number" step="0.01" name="items['+row+'][total]" class="form-control item-total" readonly></td>'
@@ -232,12 +248,14 @@
 
     function calcularTotales() {
         var filas = document.querySelectorAll('#items-table tr');
-        var subtotal = 0;
-        var totalGeneral = 0;
+        var subtotalConIVA = 0;
+        var totalGeneral   = 0;
 
         filas.forEach(function(row) {
+
             var inputCantidad  = row.querySelector('input[name*="[cantidad]"]');
             var inputPrecio    = row.querySelector('input[name*="[precio_unitario]"]');
+            var inputIVA       = row.querySelector('input[name*="[iva]"]');
             var inputDescuento = row.querySelector('input[name*="[descuento]"]');
             var inputTotal     = row.querySelector('input[name*="[total]"]');
 
@@ -245,20 +263,30 @@
 
             var cantidad  = parseFloat(inputCantidad.value)  || 0;
             var precio    = parseFloat(inputPrecio.value)    || 0;
+            var iva       = parseFloat(inputIVA?.value)      || 0;
             var descuento = parseFloat(inputDescuento.value) || 0;
 
-            var totalSinDesc = cantidad * precio;
-            var totalConDesc = totalSinDesc - (totalSinDesc * (descuento / 100));
+            var totalBase = cantidad * precio;
 
-            inputTotal.value = totalConDesc.toFixed(2);
+            // agregar IVA
+            var totalConIVA = totalBase + (totalBase * (iva / 100));
 
-            subtotal     += totalSinDesc;
-            totalGeneral += totalConDesc;
+            // aplicar descuento
+            var totalFinal = totalConIVA - (totalConIVA * (descuento / 100));
+
+            inputTotal.value = totalFinal.toFixed(2);
+
+            subtotalConIVA += totalConIVA;
+            totalGeneral   += totalFinal;
         });
 
-        document.querySelector('input[name="subtotal"]').value = subtotal.toFixed(2);
-        document.querySelector('input[name="total"]').value    = totalGeneral.toFixed(2);
+        document.querySelector('input[name="subtotal"]').value =
+            subtotalConIVA.toFixed(2);
+
+        document.querySelector('input[name="total"]').value =
+            totalGeneral.toFixed(2);
     }
+
 
 
     if (document.readyState === 'loading') {

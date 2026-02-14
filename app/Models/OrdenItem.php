@@ -16,6 +16,7 @@ class OrdenItem extends Model
         'unidad',
         'precio_unitario',
         'descuento',
+        'iva',
         'total',
         'fecha_entrega'
     ];
