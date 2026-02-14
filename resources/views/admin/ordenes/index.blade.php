@@ -23,9 +23,9 @@
 
         {{-- Buscar por proveedor --}}
         <div class="col-md-4">
-            <label>Proveedor</label>
+            <label>Razon social</label>
             <input type="text" name="proveedor" class="form-control"
-                   value="{{ request('proveedor') }}" placeholder="Nombre del proveedor">
+                   value="{{ request('proveedor') }}" placeholder="Nombre...">
         </div>
 
         {{-- Fecha --}}
@@ -63,7 +63,7 @@
         <tr>
             <th>#</th>
             <th>Número OC</th>
-            <th>Proveedor</th>
+            <th>Razon social</th>
             <th>Fecha</th>
             <th>Total</th>
             <th>Acciones</th>

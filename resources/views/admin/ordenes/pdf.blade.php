@@ -113,7 +113,7 @@
 
             <table style="width:100%; font-size:9px;">
                 <tr>
-                    <td style="font-weight:bold;">Proveedor / Supplier:</td>
+                    <td style="font-weight:bold;">Razon social / Supplier:</td>
                     <td>{{ $orden->proveedor ?: '-' }}</td>
                 </tr>
 
