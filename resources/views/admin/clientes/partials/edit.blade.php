@@ -29,30 +29,62 @@
     </div>
 </div>
 
+{{-- NUEVA FILA --}}
+<div class="row mt-3">
+
+    <div class="col-md-4">
+        <label>Teléfono</label>
+        <input type="text"
+               name="telefono"
+               class="form-control"
+               value="{{ old('telefono', $cliente->telefono ?? '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label>Tipo</label>
+        <select name="tipo" class="form-control" required>
+            <option value="">Seleccione...</option>
+
+            <option value="C" {{ old('tipo', $cliente->tipo ?? '') == 'C' ? 'selected' : '' }}>
+                Cliente
+            </option>
+
+            <option value="P" {{ old('tipo', $cliente->tipo ?? '') == 'P' ? 'selected' : '' }}>
+                Proveedor
+            </option>
+
+            <option value="A" {{ old('tipo', $cliente->tipo ?? '') == 'A' ? 'selected' : '' }}>
+                Ambos
+            </option>
+        </select>
+    </div>
+
+</div>
+
 <div class="row mt-3">
     <div class="col-md-4">
         <div class="form-group">
-            <label for="condicion_arca">Condición ARCA</label>
-            <select name="condicion_arca" id="condicion_arca" class="form-control" required>
+            <label for="condicion_iva">Condición ARCA</label>
+            <select name="condicion_iva" id="condicion_iva" class="form-control" required>
                 <option value="">Seleccione...</option>
 
-                <option value="RI" {{ old('condicion_arca', $cliente->condicion_iva ?? '') == 'RI' ? 'selected' : '' }}>
+                <option value="RI" {{ old('condicion_iva', $cliente->condicion_iva ?? '') == 'RI' ? 'selected' : '' }}>
                     Responsable Inscripto
                 </option>
 
-                <option value="EX" {{ old('condicion_arca', $cliente->condicion_iva ?? '') == 'EX' ? 'selected' : '' }}>
+                <option value="EX" {{ old('condicion_iva', $cliente->condicion_iva ?? '') == 'EX' ? 'selected' : '' }}>
                     Exento
                 </option>
 
-                <option value="NR" {{ old('condicion_arca', $cliente->condicion_iva ?? '') == 'NR' ? 'selected' : '' }}>
+                <option value="NR" {{ old('condicion_iva', $cliente->condicion_iva ?? '') == 'NR' ? 'selected' : '' }}>
                     No Responsable
                 </option>
 
-                <option value="CF" {{ old('condicion_arca', $cliente->condicion_iva ?? '') == 'CF' ? 'selected' : '' }}>
+                <option value="CF" {{ old('condicion_iva', $cliente->condicion_iva ?? '') == 'CF' ? 'selected' : '' }}>
                     Consumidor Final
                 </option>
 
-                <option value="MT" {{ old('condicion_arca', $cliente->condicion_iva ?? '') == 'MT' ? 'selected' : '' }}>
+                <option value="MT" {{ old('condicion_iva', $cliente->condicion_iva ?? '') == 'MT' ? 'selected' : '' }}>
                     Responsable Monotributo
                 </option>
             </select>

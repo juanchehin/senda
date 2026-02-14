@@ -71,6 +71,7 @@ class ClienteController extends Controller
             'direccion'     => $request->domicilio_comercial,
             'email'         => $request->email,
             'tipo'         => $request->tipo,
+            'telefono'         => $request->telefono,
 
             // Guardado como campo existente en la tabla
             'condicion_iva' => $request->condicion_arca,
@@ -110,9 +111,10 @@ class ClienteController extends Controller
             'razon_social'  => 'required|string|max:150',
             'direccion'     => 'required|string|max:255',
             'email'         => 'nullable|email|max:150',
+            'tipo' => 'required|in:C,P,A',
 
-            // Condición ARCA (se guarda en condicion_iva)
-            'condicion_arca' => 'required|string|in:RI,EX,NR,CF,MT',
+            // Condición
+            'condicion_iva' => 'required|string|in:RI,EX,NR,CF,MT',
 
             // Condición IIBB
             'condicion_iibb' => 'required|string|in:L,CM',
@@ -123,9 +125,10 @@ class ClienteController extends Controller
             'razon_social'  => $request->razon_social,
             'direccion'     => $request->direccion,
             'email'         => $request->email,
-
+            'tipo'         => $request->tipo,
+            'telefono'         => $request->telefono,
             // Guardado como campo existente en la tabla
-            'condicion_iva' => $request->condicion_arca,
+            'condicion_iva' => $request->condicion_iva,
 
             // Campo nuevo en BD: condicion_iibb
             'condicion_iibb' => $request->condicion_iibb,
