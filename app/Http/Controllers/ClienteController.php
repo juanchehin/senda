@@ -26,8 +26,8 @@ class ClienteController extends Controller
             $query->where('razon_social', 'like', '%' . $request->razon_social . '%');
         }
 
-        if ($request->filled('email')) {
-            $query->where('email', 'like', '%' . $request->email . '%');
+        if ($request->filled('tipo')) {
+            $query->where('tipo', $request->tipo);
         }
 
         $clientes = $query

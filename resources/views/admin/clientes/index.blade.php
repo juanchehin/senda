@@ -87,13 +87,24 @@
         </div>
 
         <div class="col-md-3">
-            <label>Email</label>
-            <input type="email"
-                   name="email"
-                   class="form-control"
-                   value="{{ request('email') }}"
-                   placeholder="email@cliente.com">
+            <label>Tipo</label>
+            <select name="tipo" class="form-control">
+                <option value="">Todos</option>
+
+                <option value="C" {{ request('tipo') == 'C' ? 'selected' : '' }}>
+                    Cliente
+                </option>
+
+                <option value="P" {{ request('tipo') == 'P' ? 'selected' : '' }}>
+                    Proveedor
+                </option>
+
+                <option value="A" {{ request('tipo') == 'A' ? 'selected' : '' }}>
+                    Ambos
+                </option>
+            </select>
         </div>
+
 
         <div class="col-md-1 d-flex align-items-end">
             <button type="submit" class="btn btn-dark w-100">
