@@ -56,6 +56,7 @@ class ClienteController extends Controller
             'razon_social'        => 'required|string|max:150',
             'domicilio_comercial' => 'required|string|max:255',
             'email'               => 'nullable|email|max:150',
+            'tipo' => 'required|in:C,P,A',
 
             // Condición ARCA (se guarda en condicion_iva)
             'condicion_arca'      => 'required|string|in:RI,EX,NR,CF,MT',
@@ -69,6 +70,7 @@ class ClienteController extends Controller
             'razon_social'  => $request->razon_social,
             'direccion'     => $request->domicilio_comercial,
             'email'         => $request->email,
+            'tipo'         => $request->tipo,
 
             // Guardado como campo existente en la tabla
             'condicion_iva' => $request->condicion_arca,

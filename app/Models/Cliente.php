@@ -18,6 +18,7 @@ class Cliente extends Model
         'direccion',
         'email',
         'telefono',
+        'tipo',
         'codigo_postal',
         'localidad',
         'provincia',
