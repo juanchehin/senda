@@ -86,10 +86,10 @@ Route::middleware(['auth', 'role:secretaria|admin|ingeniero'])->group(function (
     /* =======================
      | pedido cotizacion
      ======================= */
-    // Route::resource('pedido_cotizacion', PedidoCotizacionController::class);
+    Route::resource('pedidos-cotizacion', PedidoCotizacionController::class);
 
-    // Route::get('pedido_cotizacion', [PedidoCotizacionController::class, 'index'])
-    //     ->name('pedido_cotizacion.index');
+    Route::get('pedidos-cotizacion', [PedidoCotizacionController::class, 'index'])
+        ->name('pedidos-cotizacion.index');
 
     /* =======================
      | NOTAS DE DÉBITO

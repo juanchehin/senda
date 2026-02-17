@@ -346,16 +346,17 @@ return [
                     'icon'  => 'fas fa-fw fa-list',
                     'can'   => 'ver cotizaciones',
                 ],
-                // [
-                //     'text'    => 'Pedidos de Cotización',
-                //     'icon'    => 'fas fa-fw fa-paperclip',
-                //     'can'     => 'ver pedidos cotizacion'
-                // ],
+                [
+                    'text'    => 'Pedidos de Cotización',
+                    'route'   => 'pedidos-cotizacion.index',
+                    'icon'    => 'fas fa-fw fa-paperclip',
+                    'can'     => 'ver pedidos cotizacion'
+                ],
             ],
         ],
 
 
-        // ÓRDENES DE PEDIDO
+        // ÓRDENES
         [
             'text'    => 'Órdenes de compra',
             'icon'    => 'fas fa-fw fa-shopping-cart',
