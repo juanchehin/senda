@@ -1,6 +1,16 @@
 {{-- resources/views/admin/clientes/partials/edit.blade.php --}}
 
+{{-- FILA 1 --}}
 <div class="row">
+    <div class="col-md-6">
+        <label>Razón Social</label>
+        <input type="text"
+               name="razon_social"
+               class="form-control"
+               value="{{ old('razon_social', $cliente->razon_social ?? '') }}"
+               required>
+    </div>
+
     <div class="col-md-3">
         <label>CUIT</label>
         <input type="text"
@@ -11,25 +21,18 @@
                required>
     </div>
 
-    <div class="col-md-5">
-        <label>Razón Social</label>
+    <div class="col-md-3">
+        <label>Dirección (Localidad - Provincia)</label>
         <input type="text"
-               name="razon_social"
+               name="direccion"
                class="form-control"
-               value="{{ old('razon_social', $cliente->razon_social ?? '') }}"
+               value="{{ old('direccion', $cliente->direccion ?? '') }}"
                required>
-    </div>
-
-    <div class="col-md-4">
-        <label>Email</label>
-        <input type="email"
-               name="email"
-               class="form-control"
-               value="{{ old('email', $cliente->email ?? '') }}">
     </div>
 </div>
 
-{{-- NUEVA FILA --}}
+
+{{-- FILA 2 --}}
 <div class="row mt-3">
 
     <div class="col-md-4">
@@ -38,6 +41,14 @@
                name="telefono"
                class="form-control"
                value="{{ old('telefono', $cliente->telefono ?? '') }}">
+    </div>
+
+    <div class="col-md-4">
+        <label>Email</label>
+        <input type="email"
+               name="email"
+               class="form-control"
+               value="{{ old('email', $cliente->email ?? '') }}">
     </div>
 
     <div class="col-md-4">
@@ -61,10 +72,13 @@
 
 </div>
 
+
+{{-- FILA 3 --}}
 <div class="row mt-3">
+
     <div class="col-md-4">
         <div class="form-group">
-            <label for="condicion_iva">Condición ARCA</label>
+            <label for="condicion_iva">Condición IVA</label>
             <select name="condicion_iva" id="condicion_iva" class="form-control" required>
                 <option value="">Seleccione...</option>
 
@@ -93,7 +107,7 @@
 
     <div class="col-md-4">
         <div class="form-group">
-            <label for="condicion_iibb">Condición Ingreso Bruto</label>
+            <label for="condicion_iibb">Condición IIBB</label>
             <select name="condicion_iibb" id="condicion_iibb" class="form-control" required>
                 <option value="">Seleccione...</option>
 
@@ -108,12 +122,4 @@
         </div>
     </div>
 
-    <div class="col-md-4">
-        <label>Domicilio Comercial</label>
-        <input type="text"
-               name="direccion"
-               class="form-control"
-               value="{{ old('direccion', $cliente->direccion ?? '') }}"
-               required>
-    </div>
 </div>
