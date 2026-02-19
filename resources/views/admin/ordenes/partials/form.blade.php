@@ -240,7 +240,8 @@
         if (
             e.target.name.indexOf('[cantidad]') !== -1 ||
             e.target.name.indexOf('[precio_unitario]') !== -1 ||
-            e.target.name.indexOf('[descuento]') !== -1
+            e.target.name.indexOf('[descuento]') !== -1 ||
+            e.target.name.indexOf('[iva]') !== -1
         ) {
             calcularTotales();
         }
