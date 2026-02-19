@@ -25,9 +25,9 @@
 
                 {{-- ID cliente --}}
                 <input type="hidden"
-                    name="cliente_id"
-                    id="cliente_id"
-                    value="{{ old('cliente_id') }}">
+                    name="id_cliente"
+                    id="id_cliente"
+                    value="{{ old('id_cliente') }}">
 
                 {{-- dropdown --}}
                 <div id="dropdown-clientes"
@@ -303,7 +303,7 @@
 
     const inputRazon = document.getElementById('razon_social');
     const dropdownClientes = document.getElementById('dropdown-clientes');
-    const inputClienteId = document.getElementById('cliente_id');
+    const inputClienteId = document.getElementById('id_cliente');
 
     // campos opcionales
     const inputCuit      = document.getElementById('cuit');

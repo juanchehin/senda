@@ -97,7 +97,7 @@
             <tr>
                 <td>{{ $orden->id }}</td>
                 <td>{{ $orden->numero_oc }}</td>
-                <td>{{ $orden->proveedor }}</td>
+                <td>{{ $orden->cliente->razon_social ?? '-' }}</td>
                 <td>{{ $orden->fecha }}</td>
                 <td>{{ $orden->moneda }}</td>
                 <td>${{ number_format($orden->total, 2) }}</td>

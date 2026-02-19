@@ -12,17 +12,20 @@ class OrdenCompraController extends Controller
 {
     public function index(Request $request)
     {
-        $query = OrdenCompra::query();
+        $query = OrdenCompra::with('cliente'); // 👈 cargamos relación
 
-        if($request->filled('numero')){
-            $query->where('numero_oc', 'LIKE', '%'.$request->numero.'%');
+        if ($request->filled('numero')) {
+            $query->where('numero_oc', 'LIKE', '%' . $request->numero . '%');
         }
 
-        if($request->filled('proveedor')){
-            $query->where('proveedor', 'LIKE', '%'.$request->proveedor.'%');
+        // 🔹 FILTRO POR RAZÓN SOCIAL (tabla clientes)
+        if ($request->filled('proveedor')) {
+            $query->whereHas('cliente', function ($q) use ($request) {
+                $q->where('razon_social', 'LIKE', '%' . $request->proveedor . '%');
+            });
         }
 
-        if($request->filled('fecha')){
+        if ($request->filled('fecha')) {
             $query->whereDate('fecha', $request->fecha);
         }
 
@@ -30,14 +33,12 @@ class OrdenCompraController extends Controller
             $query->where('moneda', $request->moneda);
         }
 
-
-        $ordenes = $query->orderBy('fecha','desc')
-                        ->paginate(10)
-                        ->appends($request->query());
+        $ordenes = $query->orderBy('fecha', 'desc')
+            ->paginate(10)
+            ->appends($request->query());
 
         return view('admin.ordenes.index', compact('ordenes'));
     }
-
 
     public function create()
     {
@@ -46,9 +47,11 @@ class OrdenCompraController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request);
         $validated = $request->validate([
             'numero_oc'         => 'required|string|max:191|unique:orden_compras,numero_oc',
             'fecha'             => 'required|date',
+            'id_cliente'        => 'required|exists:clientes,id',
             'cuit'              => 'required|digits:11',
             'direccion'         => 'nullable|string|max:191',
             'telefono'          => 'nullable|string|max:50',

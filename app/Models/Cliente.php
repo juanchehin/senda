@@ -61,4 +61,9 @@ class Cliente extends Model
         };
     }
 
+    public function ordenes()
+    {
+        return $this->hasMany(OrdenCompra::class, 'id_cliente');
+    }
+
 }

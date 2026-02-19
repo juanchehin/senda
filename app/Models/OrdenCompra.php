@@ -15,7 +15,7 @@ class OrdenCompra extends Model
         'numero_oc',
         'fecha',
         'fecha_entrega',
-        'proveedor',
+        'id_cliente',
         'cuit',
         'direccion',
         'telefono',
@@ -34,5 +34,11 @@ class OrdenCompra extends Model
     {
         return $this->hasMany(OrdenItem::class, 'orden_compra_id');
     }
+
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class, 'id_cliente');
+    }
+
 
 }
