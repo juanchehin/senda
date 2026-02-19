@@ -144,8 +144,61 @@
                 <td><input type="number" step="0.01" name="items[{{ $i }}][cantidad]" class="form-control"
                     value="{{ $item['cantidad'] ?? '' }}"></td>
 
-                <td><input type="text" name="items[{{ $i }}][unidad]" class="form-control"
-                    value="{{ $item['unidad'] ?? '' }}"></td>
+                <td>
+                    <select name="items[{{ $i }}][unidad]" class="form-control">
+                        <option value="">seleccionar...</option>
+
+                        @php
+                            $unidadSeleccionada = $item['unidad'] ?? '';
+                        @endphp
+
+                        <option value="1"  {{ $unidadSeleccionada == 1 ? 'selected' : '' }}>kilogramos</option>
+                        <option value="2"  {{ $unidadSeleccionada == 2 ? 'selected' : '' }}>metros</option>
+                        <option value="3"  {{ $unidadSeleccionada == 3 ? 'selected' : '' }}>metros cuadrados</option>
+                        <option value="4"  {{ $unidadSeleccionada == 4 ? 'selected' : '' }}>metros cúbicos</option>
+                        <option value="5"  {{ $unidadSeleccionada == 5 ? 'selected' : '' }}>litros</option>
+                        <option value="6"  {{ $unidadSeleccionada == 6 ? 'selected' : '' }}>1000 kWh</option>
+                        <option value="7"  {{ $unidadSeleccionada == 7 ? 'selected' : '' }}>unidades</option>
+                        <option value="8"  {{ $unidadSeleccionada == 8 ? 'selected' : '' }}>pares</option>
+                        <option value="9"  {{ $unidadSeleccionada == 9 ? 'selected' : '' }}>docenas</option>
+                        <option value="10" {{ $unidadSeleccionada == 10 ? 'selected' : '' }}>quilates</option>
+                        <option value="11" {{ $unidadSeleccionada == 11 ? 'selected' : '' }}>millares</option>
+                        <option value="14" {{ $unidadSeleccionada == 14 ? 'selected' : '' }}>gramos</option>
+                        <option value="15" {{ $unidadSeleccionada == 15 ? 'selected' : '' }}>milímetros</option>
+                        <option value="16" {{ $unidadSeleccionada == 16 ? 'selected' : '' }}>mm cúbicos</option>
+                        <option value="17" {{ $unidadSeleccionada == 17 ? 'selected' : '' }}>kilómetros</option>
+                        <option value="18" {{ $unidadSeleccionada == 18 ? 'selected' : '' }}>hectolitros</option>
+                        <option value="20" {{ $unidadSeleccionada == 20 ? 'selected' : '' }}>centímetros</option>
+                        <option value="25" {{ $unidadSeleccionada == 25 ? 'selected' : '' }}>jgo. pqt. mazo naipes</option>
+                        <option value="27" {{ $unidadSeleccionada == 27 ? 'selected' : '' }}>cm cúbicos</option>
+                        <option value="29" {{ $unidadSeleccionada == 29 ? 'selected' : '' }}>toneladas</option>
+                        <option value="30" {{ $unidadSeleccionada == 30 ? 'selected' : '' }}>dam cúbicos</option>
+                        <option value="31" {{ $unidadSeleccionada == 31 ? 'selected' : '' }}>hm cúbicos</option>
+                        <option value="32" {{ $unidadSeleccionada == 32 ? 'selected' : '' }}>km cúbicos</option>
+                        <option value="33" {{ $unidadSeleccionada == 33 ? 'selected' : '' }}>microgramos</option>
+                        <option value="34" {{ $unidadSeleccionada == 34 ? 'selected' : '' }}>nanogramos</option>
+                        <option value="35" {{ $unidadSeleccionada == 35 ? 'selected' : '' }}>picogramos</option>
+                        <option value="41" {{ $unidadSeleccionada == 41 ? 'selected' : '' }}>miligramos</option>
+                        <option value="47" {{ $unidadSeleccionada == 47 ? 'selected' : '' }}>mililitros</option>
+                        <option value="48" {{ $unidadSeleccionada == 48 ? 'selected' : '' }}>curie</option>
+                        <option value="49" {{ $unidadSeleccionada == 49 ? 'selected' : '' }}>milicurie</option>
+                        <option value="50" {{ $unidadSeleccionada == 50 ? 'selected' : '' }}>microcurie</option>
+                        <option value="51" {{ $unidadSeleccionada == 51 ? 'selected' : '' }}>uiacthor</option>
+                        <option value="52" {{ $unidadSeleccionada == 52 ? 'selected' : '' }}>muiacthor</option>
+                        <option value="53" {{ $unidadSeleccionada == 53 ? 'selected' : '' }}>kg base</option>
+                        <option value="54" {{ $unidadSeleccionada == 54 ? 'selected' : '' }}>gruesa</option>
+                        <option value="61" {{ $unidadSeleccionada == 61 ? 'selected' : '' }}>kg bruto</option>
+                        <option value="62" {{ $unidadSeleccionada == 62 ? 'selected' : '' }}>uiactant</option>
+                        <option value="63" {{ $unidadSeleccionada == 63 ? 'selected' : '' }}>muiactant</option>
+                        <option value="64" {{ $unidadSeleccionada == 64 ? 'selected' : '' }}>uiactig</option>
+                        <option value="65" {{ $unidadSeleccionada == 65 ? 'selected' : '' }}>muiactig</option>
+                        <option value="66" {{ $unidadSeleccionada == 66 ? 'selected' : '' }}>kg activo</option>
+                        <option value="67" {{ $unidadSeleccionada == 67 ? 'selected' : '' }}>gramo activo</option>
+                        <option value="68" {{ $unidadSeleccionada == 68 ? 'selected' : '' }}>gramo base</option>
+                        <option value="96" {{ $unidadSeleccionada == 96 ? 'selected' : '' }}>packs</option>
+                        <option value="98" {{ $unidadSeleccionada == 98 ? 'selected' : '' }}>otras unidades</option>
+                    </select>
+                </td>
 
                 <td><input type="number" step="0.01" name="items[{{ $i }}][precio_unitario]" class="form-control"
                     value="{{ $item['precio_unitario'] ?? '' }}"></td>
@@ -211,7 +264,56 @@
         + '  <td><input type="text" name="items['+row+'][codigo]" class="form-control"></td>'
         + '  <td><input type="text" name="items['+row+'][descripcion]" class="form-control"></td>'
         + '  <td><input type="number" step="0.01" name="items['+row+'][cantidad]" class="form-control"></td>'
-        + '  <td><input type="text" name="items['+row+'][unidad]" class="form-control"></td>'
+        + '  <td>'
+        + '    <select name="items['+row+'][unidad]" class="form-control">'
+        + '        <option value="">seleccionar...</option>'
+        + '        <option value="1">kilogramos</option>'
+        + '        <option value="2">metros</option>'
+        + '        <option value="3">metros cuadrados</option>'
+        + '        <option value="4">metros cúbicos</option>'
+        + '        <option value="5">litros</option>'
+        + '        <option value="6">1000 kWh</option>'
+        + '        <option value="7">unidades</option>'
+        + '        <option value="8">pares</option>'
+        + '        <option value="9">docenas</option>'
+        + '        <option value="10">quilates</option>'
+        + '        <option value="11">millares</option>'
+        + '        <option value="14">gramos</option>'
+        + '        <option value="15">milímetros</option>'
+        + '        <option value="16">mm cúbicos</option>'
+        + '        <option value="17">kilómetros</option>'
+        + '        <option value="18">hectolitros</option>'
+        + '        <option value="20">centímetros</option>'
+        + '        <option value="25">jgo. pqt. mazo naipes</option>'
+        + '        <option value="27">cm cúbicos</option>'
+        + '        <option value="29">toneladas</option>'
+        + '        <option value="30">dam cúbicos</option>'
+        + '        <option value="31">hm cúbicos</option>'
+        + '        <option value="32">km cúbicos</option>'
+        + '        <option value="33">microgramos</option>'
+        + '        <option value="34">nanogramos</option>'
+        + '        <option value="35">picogramos</option>'
+        + '        <option value="41">miligramos</option>'
+        + '        <option value="47">mililitros</option>'
+        + '        <option value="48">curie</option>'
+        + '        <option value="49">milicurie</option>'
+        + '        <option value="50">microcurie</option>'
+        + '        <option value="51">uiacthor</option>'
+        + '        <option value="52">muiacthor</option>'
+        + '        <option value="53">kg base</option>'
+        + '        <option value="54">gruesa</option>'
+        + '        <option value="61">kg bruto</option>'
+        + '        <option value="62">uiactant</option>'
+        + '        <option value="63">muiactant</option>'
+        + '        <option value="64">uiactig</option>'
+        + '        <option value="65">muiactig</option>'
+        + '        <option value="66">kg activo</option>'
+        + '        <option value="67">gramo activo</option>'
+        + '        <option value="68">gramo base</option>'
+        + '        <option value="96">packs</option>'
+        + '        <option value="98">otras unidades</option>'
+        + '    </select>'
+        + '  </td>'
         + '  <td><input type="number" step="0.01" name="items['+row+'][precio_unitario]" class="form-control"></td>'
         + '  <td><input type="number" step="0.01" name="items['+row+'][iva]" class="form-control" value="21"></td>'
         + '  <td><input type="number" step="0.01" name="items['+row+'][descuento]" class="form-control" value="0"></td>'
