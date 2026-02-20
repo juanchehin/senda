@@ -6,7 +6,11 @@
 
     <div class="col-md-3">
         <label>Fecha</label>
-        <input type="date" name="fecha" class="form-control" value="{{ old('fecha', $orden->fecha ?? '') }}" required>
+        <input type="date"
+            name="fecha"
+            class="form-control"
+            value="{{ old('fecha', isset($orden) ? $orden->fecha : now()->format('Y-m-d')) }}"
+            required>
     </div>
 
     {{-- Razón Social --}}
@@ -241,17 +245,35 @@
 </div>
 
 <div class="row mt-3">
-    <div class="col-md-6">
+
+    <div class="col-md-4">
         <label>Subtotal c/IVA</label>
-        <input type="number" step="0.01" name="subtotal" class="form-control" value="{{ old('subtotal', $orden->subtotal ?? 0) }}" readonly>
+        <input type="number" step="0.01"
+               name="subtotal"
+               class="form-control"
+               value="{{ old('subtotal', $orden->subtotal ?? 0) }}"
+               readonly>
     </div>
 
-    <div class="col-md-6">
-        <label>Total General</label>
-        <input type="number" step="0.01" name="total" class="form-control" value="{{ old('total', $orden->total ?? 0) }}" readonly>
+    <div class="col-md-4">
+        <label>Descuentos Totales</label>
+        <input type="number" step="0.01"
+               name="descuentos_totales"
+               class="form-control"
+               value="{{ old('descuentos_totales', $orden->descuentos_totales ?? 0) }}"
+               readonly>
     </div>
+
+    <div class="col-md-4">
+        <label>Total Final</label>
+        <input type="number" step="0.01"
+               name="total"
+               class="form-control"
+               value="{{ old('total', $orden->total ?? 0) }}"
+               readonly>
+    </div>
+
 </div>
-
 
 <script>
     let row = {{ count($items) }};
@@ -353,6 +375,7 @@
         var filas = document.querySelectorAll('#items-table tr');
         var subtotalConIVA = 0;
         var totalGeneral   = 0;
+        var descuentosTotales = 0;
 
         filas.forEach(function(row) {
 
@@ -369,22 +392,23 @@
             var iva       = parseFloat(inputIVA?.value)      || 0;
             var descuento = parseFloat(inputDescuento.value) || 0;
 
-            var totalBase = cantidad * precio;
-
-            // agregar IVA
+            var totalBase   = cantidad * precio;
             var totalConIVA = totalBase + (totalBase * (iva / 100));
-
-            // aplicar descuento
-            var totalFinal = totalConIVA - (totalConIVA * (descuento / 100));
+            var descuentoMonto = totalConIVA * (descuento / 100);
+            var totalFinal  = totalConIVA - descuentoMonto;
 
             inputTotal.value = totalFinal.toFixed(2);
 
-            subtotalConIVA += totalConIVA;
-            totalGeneral   += totalFinal;
+            subtotalConIVA   += totalConIVA;
+            descuentosTotales += descuentoMonto;
+            totalGeneral     += totalFinal;
         });
 
         document.querySelector('input[name="subtotal"]').value =
             subtotalConIVA.toFixed(2);
+
+        document.querySelector('input[name="descuentos_totales"]').value =
+            descuentosTotales.toFixed(2);
 
         document.querySelector('input[name="total"]').value =
             totalGeneral.toFixed(2);
