@@ -316,25 +316,6 @@
     font-size:10px;
 ">
 
-    {{-- OBSERVACIONES --}}
-    @if($orden->observaciones)
-    <div style="margin-bottom:12px;">
-
-        <div style="font-weight:bold; margin-bottom:4px;">Observaciones:</div>
-
-        <div style="
-            border:1px solid #000;
-            padding:7px 10px;
-            border-radius:4px;
-            white-space:pre-wrap;
-            font-size:10px;
-            line-height:14px;
-        ">
-            {{ $orden->observaciones }}
-        </div>
-    </div>
-    @endif
-
 
     {{-- TOTALES --}}
     <table style="width:100%; font-size:10px; border-collapse:collapse;">
