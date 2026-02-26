@@ -13,6 +13,8 @@ class PedidoCotizacion extends Model
 
     protected $fillable = [
         'id_cotizacion',
+        'id_cliente',
+        'fecha',
         'archivo',
         'observaciones'
     ];
@@ -20,5 +22,10 @@ class PedidoCotizacion extends Model
     public function cotizacion()
     {
         return $this->belongsTo(Cotizacion::class, 'id_cotizacion');
+    }
+
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class);
     }
 }

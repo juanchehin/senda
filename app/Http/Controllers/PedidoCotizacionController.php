@@ -23,12 +23,19 @@ class PedidoCotizacionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'fecha'         => 'required|date',
+            'id_cliente'    => 'required|exists:clientes,id',
+            'archivo'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'observaciones' => 'nullable|string'
         ]);
 
-        $data = $request->all();
+        $data = [
+            'fecha'         => $request->fecha,
+            'id_cliente'    => $request->id_cliente,
+            'observaciones' => $request->observaciones,
+        ];
 
+        // Archivo
         if ($request->hasFile('archivo')) {
             $data['archivo'] = $request->file('archivo')
                 ->store('pedidos-cotizacion', 'public');
@@ -36,7 +43,8 @@ class PedidoCotizacionController extends Controller
 
         PedidoCotizacion::create($data);
 
-        return redirect()->route('pedidos-cotizacion.index')
+        return redirect()
+            ->route('pedidos-cotizacion.index')
             ->with('success', 'Pedido registrado correctamente');
     }
 
