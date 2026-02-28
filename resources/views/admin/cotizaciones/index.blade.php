@@ -33,7 +33,7 @@
             <input type="text" name="cliente"
                    class="form-control"
                    value="{{ request('cliente') }}"
-                   placeholder="Nombre cliente...">
+                   placeholder="Razon social...">
         </div>
 
         {{-- Fecha --}}
