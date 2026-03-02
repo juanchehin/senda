@@ -81,7 +81,7 @@
         <tr>
             <td width="20%">
                 {{-- Logo --}}
-                <img src="{{ public_path('logo.png') }}" class="logo">
+                <img src="{{ public_path('img/logo.png') }}" class="logo">
             </td>
 
             <td width="50%" class="empresa">
