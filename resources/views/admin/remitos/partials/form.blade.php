@@ -6,20 +6,20 @@
     <div class="col-md-4 mb-3">
         <label class="form-label">Número de Remito</label>
         <input type="text"
-               name="numero"
+               name="numero_remito"
                class="form-control"
-               value="{{ old('numero', $remito->numero ?? '') }}"
+               value="{{ old('numero_remito', $remito->numero_remito ?? '') }}"
                required>
     </div>
 
     {{-- Cliente --}}
     <div class="col-md-4 mb-3">
         <label class="form-label">Cliente</label>
-        <select name="cliente_id" class="form-control" required>
+        <select name="id_cliente" class="form-control" required>
             <option value="">Seleccione cliente</option>
             @foreach($clientes as $cliente)
                 <option value="{{ $cliente->id }}"
-                    {{ old('cliente_id', $remito->cliente_id ?? '') == $cliente->id ? 'selected' : '' }}>
+                    {{ old('id_cliente', $remito->id_cliente ?? '') == $cliente->id_cliente ? 'selected' : '' }}>
                     {{ $cliente->razon_social }}
                 </option>
             @endforeach
@@ -40,18 +40,18 @@
     <div class="col-md-4 mb-3">
         <label class="form-label">OC Asociada</label>
         <input type="text"
-               name="oc_asociada"
+               name="id_orden_compra"
                class="form-control"
-               value="{{ old('oc_asociada', $remito->oc_asociada ?? '') }}">
+               value="{{ old('id_orden_compra', $remito->id_orden_compra ?? '') }}">
     </div>
 
     {{-- Factura Relacionada --}}
     <div class="col-md-4 mb-3">
         <label class="form-label">Factura Relacionada</label>
         <input type="text"
-               name="factura_relacionada"
+               name="id_factura"
                class="form-control"
-               value="{{ old('factura_relacionada', $remito->factura_relacionada ?? '') }}">
+               value="{{ old('id_factura', $remito->id_factura ?? '') }}">
     </div>
 
     {{-- Estado --}}
