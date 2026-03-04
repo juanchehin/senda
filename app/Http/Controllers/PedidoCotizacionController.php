@@ -26,10 +26,6 @@ class PedidoCotizacionController extends Controller
             $query->where('estado', $request->estado);
         }
 
-        // Filtro fecha
-        if ($request->filled('fecha')) {
-            $query->whereDate('fecha', $request->fecha);
-        }
 
         $pedidos = $query->orderByDesc('id_ped_cot')
             ->paginate(10);

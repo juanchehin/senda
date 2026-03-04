@@ -48,15 +48,6 @@
             </select>
         </div>
 
-        {{-- Fecha --}}
-        <div class="col-md-2">
-            <label>Fecha</label>
-            <input type="date"
-                   name="fecha"
-                   class="form-control"
-                   value="{{ request('fecha') }}">
-        </div>
-
         <div class="col-md-2 d-flex align-items-end">
             <button type="submit"
                     class="btn btn-dark w-100">
