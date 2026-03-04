@@ -145,24 +145,33 @@
                 <td>
 
                     <a href="{{ route('cotizaciones.show', $cotizacion->id_cotizacion) }}"
-                       class="btn btn-sm btn-info">
+                    class="btn btn-sm btn-info">
                         <i class="fas fa-eye"></i>
                     </a>
 
                     <a href="{{ route('cotizaciones.edit', $cotizacion->id_cotizacion) }}"
-                       class="btn btn-sm btn-warning">
+                    class="btn btn-sm btn-warning">
                         <i class="fas fa-edit"></i>
                     </a>
 
                     <a href="{{ route('cotizaciones.pdf', $cotizacion->id_cotizacion) }}"
-                       class="btn btn-sm btn-light"
-                       target="_blank">
+                    class="btn btn-sm btn-light"
+                    target="_blank">
                         <i class="fas fa-file-pdf text-danger"></i>
                     </a>
 
+                    {{-- BOTÓN COMENTARIO --}}
+                    <button type="button"
+                            class="btn btn-sm btn-secondary"
+                            data-toggle="modal"
+                            data-target="#modalComentario"
+                            data-id="{{ $cotizacion->id_cotizacion }}">
+                        <i class="fas fa-comment"></i>
+                    </button>
+
                     <form action="{{ route('cotizaciones.destroy', $cotizacion->id_cotizacion) }}"
-                          method="POST"
-                          style="display:inline">
+                        method="POST"
+                        style="display:inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
@@ -178,6 +187,56 @@
     </tbody>
 </table>
 
+{{-- MODAL COMENTARIO --}}
+<div class="modal fade" id="modalComentario" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <form method="POST" action="{{ route('cotizaciones.comentario.store') }}">
+            @csrf
+            <input type="hidden" name="cotizacion_id" id="cotizacion_id">
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Observación</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Comentario / Observación</label>
+                        <textarea name="comentario"
+                                  class="form-control"
+                                  rows="4"
+                                  required></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        Guardar
+                    </button>
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-dismiss="modal">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{ $cotizaciones->links() }}
+
+@section('js')
+<script>
+$('#modalComentario').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var cotizacionId = button.data('id');
+    $('#cotizacion_id').val(cotizacionId);
+});
+</script>
+@endsection
 
 @stop
