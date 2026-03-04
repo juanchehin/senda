@@ -128,4 +128,20 @@ class PedidoCotizacionController extends Controller
         return redirect()->route('pedidos-cotizacion.index')
             ->with('success', 'Pedido eliminado correctamente');
     }
+
+    public function storeComentario(Request $request)
+    {
+        $request->validate([
+            'pedido_id' => 'required',
+            'comentarios' => 'required|string'
+        ]);
+
+        PedidoCotizacion::where('id_ped_cot', $request->pedido_id)
+            ->update([
+                'comentarios' => $request->comentarios
+            ]);
+
+        return back()->with('success', 'Comentarios guardada correctamente.');
+    }
+
 }

@@ -160,15 +160,6 @@
                         <i class="fas fa-file-pdf text-danger"></i>
                     </a>
 
-                    {{-- BOTÓN COMENTARIO --}}
-                    <button type="button"
-                            class="btn btn-sm btn-secondary"
-                            data-toggle="modal"
-                            data-target="#modalComentario"
-                            data-id="{{ $cotizacion->id_cotizacion }}">
-                        <i class="fas fa-comment"></i>
-                    </button>
-
                     <form action="{{ route('cotizaciones.destroy', $cotizacion->id_cotizacion) }}"
                         method="POST"
                         style="display:inline">

@@ -100,6 +100,10 @@ Route::middleware(['auth', 'role:secretaria|admin|ingeniero'])->group(function (
         'pedidos-cotizacion' => 'pedido_cotizacion'
     ]);
 
+    Route::post('/pedidos-cotizacion/comentarios',
+        [PedidoCotizacionController::class, 'storeComentario']
+    )->name('pedidos-cotizacion.comentarios.store');
+
 
     /* =======================
      | NOTAS DE DÉBITO

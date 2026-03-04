@@ -21,6 +21,7 @@ class PedidoCotizacion extends Model
         'fecha',
         'archivo',
         'observaciones',
+        'comentarios',
         'estado_pc'
     ];
 

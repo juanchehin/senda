@@ -148,13 +148,22 @@
                 <td>
 
                     <a href="{{ route('pedidos-cotizacion.edit', $pedido->id_ped_cot) }}"
-                       class="btn btn-sm btn-warning">
+                    class="btn btn-sm btn-warning">
                         <i class="fas fa-edit"></i>
                     </a>
 
+                    {{-- BOTÓN OBSERVACIÓN --}}
+                    <button type="button"
+                            class="btn btn-sm btn-secondary"
+                            data-toggle="modal"
+                            data-target="#modalComentarios"
+                            data-id="{{ $pedido->id_ped_cot }}">
+                        <i class="fas fa-comment"></i>
+                    </button>
+
                     <form action="{{ route('pedidos-cotizacion.destroy', $pedido->id_ped_cot) }}"
-                          method="POST"
-                          style="display:inline">
+                        method="POST"
+                        style="display:inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
@@ -172,5 +181,68 @@
 </table>
 
 {{ $pedidos->appends(request()->query())->links() }}
+
+{{-- =========================
+     MODAL OBSERVACIÓN
+========================= --}}
+<div class="modal fade" id="modalComentarios" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST"
+              action="{{ route('pedidos-cotizacion.comentarios.store') }}">
+            @csrf
+            <input type="hidden"
+                   name="pedido_id"
+                   id="id_pedido">
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Agregar Comentarios
+                    </h5>
+                    <button type="button"
+                            class="close"
+                            data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Comentarios</label>
+                        <textarea name="comentarios"
+                                  class="form-control"
+                                  rows="4"
+                                  required></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Guardar
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-dismiss="modal">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section('js')
+
+<script>
+    $('#modalComentarios').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var pedidoId = button.data('id');
+        $('#id_pedido').val(pedidoId);
+    });
+</script>
+
+@endsection
 
 @stop
