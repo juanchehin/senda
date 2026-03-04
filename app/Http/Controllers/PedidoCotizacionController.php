@@ -95,8 +95,7 @@ class PedidoCotizacionController extends Controller
             'nro_pedido_asociado' => 'nullable|string|max:50',
             'archivo'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'fecha'         => 'required|date',
-            'observaciones' => 'nullable|string',
-            'estado_pc'     => 'required|string'
+            'observaciones' => 'nullable|string'
         ]);
 
         // 🚀 Si NO se sube archivo, lo quitamos del array para no sobrescribirlo

@@ -33,24 +33,6 @@
         @enderror
     </div>
 
-    {{-- Estado --}}
-    <div class="col-md-4 mb-3">
-        <label class="form-label">Estado *</label>
-        <select name="estado_pc"
-                class="form-select @error('estado_pc') is-invalid @enderror"
-                required>
-            <option value="p" {{ old('estado_pc', $pedido_cotizacion->estado_pc) == 'p' ? 'selected' : '' }}>
-                Pendiente
-            </option>
-            <option value="c" {{ old('estado_pc', $pedido_cotizacion->estado_pc) == 'c' ? 'selected' : '' }}>
-                Cotizado
-            </option>
-        </select>
-        @error('estado_pc')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-
 </div>
 
 <div class="row">
