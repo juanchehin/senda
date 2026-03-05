@@ -144,12 +144,20 @@
 
                 <td>
 
-                    <a href="{{ route('pedidos-cotizacion.edit', $pedido->id_ped_cot) }}"
-                    class="btn btn-sm btn-warning">
-                        <i class="fas fa-edit"></i>
-                    </a>
+                    {{-- EDITAR --}}
+                    @if($pedido->estado_pc == 'p')
+                        <a href="{{ route('pedidos-cotizacion.edit', $pedido->id_ped_cot) }}"
+                        class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    @else
+                        <button class="btn btn-sm btn-warning" disabled title="Pedido ya cotizado">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    @endif
 
-                    {{-- BOTÓN OBSERVACIÓN --}}
+
+                    {{-- BOTÓN OBSERVACIÓN (SIEMPRE ACTIVO) --}}
                     <button type="button"
                             class="btn btn-sm btn-secondary"
                             data-toggle="modal"
@@ -158,17 +166,25 @@
                         <i class="fas fa-comment"></i>
                     </button>
 
-                    <form action="{{ route('pedidos-cotizacion.destroy', $pedido->id_ped_cot) }}"
-                        method="POST"
-                        style="display:inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                                class="btn btn-sm btn-danger"
-                                onclick="return confirm('¿Eliminar este pedido?')">
+
+                    {{-- ELIMINAR --}}
+                    @if($pedido->estado_pc == 'p')
+                        <form action="{{ route('pedidos-cotizacion.destroy', $pedido->id_ped_cot) }}"
+                            method="POST"
+                            style="display:inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                    class="btn btn-sm btn-danger"
+                                    onclick="return confirm('¿Eliminar este pedido?')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    @else
+                        <button class="btn btn-sm btn-danger" disabled title="Pedido ya cotizado">
                             <i class="fas fa-trash"></i>
                         </button>
-                    </form>
+                    @endif
 
                 </td>
 
