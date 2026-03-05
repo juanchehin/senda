@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cotizacion;
 use App\Models\Cliente;
+use App\Models\PedidoCotizacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -59,10 +60,12 @@ class CotizacionController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
+
         $request->validate([
             'fecha_cot' => 'required|date',
             'id_cliente' => 'required|exists:clientes,id',
-            'nro_pedido_asociado' => 'nullable|string|max:50',
+            'nro_pedido_asoc' => 'nullable|string|max:50',
             'forma_pago' => 'required|string|max:20',
             'motivo' => 'required|in:pedido,particular',
             'items' => 'required|array|min:1',
@@ -80,7 +83,7 @@ class CotizacionController extends Controller
             $cotizacion = Cotizacion::create([
                 'fecha_cot' => $request->fecha_cot,
                 'id_cliente' => $request->id_cliente,
-                'nro_pedido_asociado' => $request->nro_pedido_asociado,
+                'nro_pedido_asoc' => $request->nro_pedido_asoc,
                 'moneda' => $request->moneda,
                 'forma_pago' => $request->forma_pago,
                 'lugar_entrega' => $request->lugar_entrega,
@@ -101,6 +104,21 @@ class CotizacionController extends Controller
                     'precio_unitario' => $item['precio_unitario'],
                     'iva' => $item['iva'] ?? 0,
                 ]);
+            }
+
+            // dd($request->nro_pedido_asoc);
+            // actualizar estado del pedido si corresponde
+            if ($request->filled('nro_pedido_asoc')) {
+
+                $pedido = PedidoCotizacion::where('id_ped_cot', $request->nro_pedido_asoc)->first();
+
+                // dd($pedido);
+
+                if ($pedido) {
+                    $pedido->update([
+                        'estado_pc' => 'c'
+                    ]);
+                }
             }
 
             DB::commit();

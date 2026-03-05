@@ -123,9 +123,9 @@
     <div class="col-md-3" id="grupo-nro-pedido">
         <label>Nro Pedido Asociado</label>
         <input type="text"
-            name="nro_pedido_asociado"
+            name="nro_pedido_asoc"
             class="form-control"
-            value="{{ old('nro_pedido_asociado', $cotizacion->nro_pedido_asociado ?? '') }}">
+            value="{{ old('nro_pedido_asoc', $cotizacion->nro_pedido_asoc ?? '') }}">
     </div>
 
 </div>
