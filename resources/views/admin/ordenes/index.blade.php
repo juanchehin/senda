@@ -14,13 +14,6 @@
 
     <div class="row">
 
-    {{-- Número OC --}}
-    <div class="col-md-3">
-        <label>Número OC</label>
-        <input type="text" name="numero" class="form-control"
-               value="{{ request('numero') }}" placeholder="">
-    </div>
-
     {{-- Razon social --}}
     <div class="col-md-3">
         <label>Razon social</label>
@@ -28,32 +21,18 @@
                value="{{ request('proveedor') }}" placeholder="">
     </div>
 
-    {{-- Fecha --}}
+    {{--    --}}
     <div class="col-md-2">
-        <label>Fecha</label>
-        <input type="date" name="fecha" class="form-control"
-               value="{{ request('fecha') }}">
-    </div>
-
-    {{-- NUEVO FILTRO MONEDA --}}
-    <div class="col-md-2">
-        <label>Moneda</label>
-        <select name="moneda" class="form-control">
-            <option value="">Todas</option>
-
-            <option value="ARS" {{ request('moneda') == 'ARS' ? 'selected' : '' }}>
-                ARS
-            </option>
-
-            <option value="USD_BILLETE" {{ request('moneda') == 'USD_BILLETE' ? 'selected' : '' }}>
-                USD Billete
-            </option>
-
-            <option value="USD_DIVISA" {{ request('moneda') == 'USD_DIVISA' ? 'selected' : '' }}>
-                USD Divisa
-            </option>
+        <label>Estado</label>
+        <select name="estado" class="form-control">
+            <option value="">Todos</option>
+            <option value="pendiente" {{ request('estado')=='pendiente'?'selected':'' }}>Pendiente</option>
+            <option value="anulada" {{ request('estado')=='anulada'?'selected':'' }}>Anulada</option>
+            <option value="parcial" {{ request('estado')=='parcial'?'selected':'' }}>Parcial</option>
+            <option value="cumplida" {{ request('estado')=='cumplida'?'selected':'' }}>Cumplida</option>
         </select>
     </div>
+
 
     {{-- Botón buscar --}}
     <div class="col-md-1 d-flex align-items-end">
@@ -84,48 +63,78 @@
     <thead>
         <tr>
             <th>#</th>
-            <th>Número OC</th>
-            <th>Razon social</th>
+            <th>Archivo</th>
+            <th>Cliente</th>
             <th>Fecha</th>
-            <th>Moneda</th>
-            <th>Total</th>
+            <th>Estado</th>
             <th>Acciones</th>
         </tr>
     </thead>
+
     <tbody>
         @foreach($ordenes as $orden)
-            <tr>
-                <td>{{ $orden->id }}</td>
-                <td>{{ $orden->numero_oc }}</td>
-                <td>{{ $orden->cliente->razon_social ?? '-' }}</td>
-                <td>{{ $orden->fecha }}</td>
-                <td>{{ $orden->moneda }}</td>
-                <td>${{ number_format($orden->total, 2) }}</td>
-                <td>
+        <tr>
 
-                {{-- BOTÓN EDITAR (solo admin o ingeniero) --}}
-                @hasanyrole('admin|ingeniero')
-                    <a href="{{ route('ordenes.edit', $orden->id) }}"
-                    class="btn btn-sm btn-primary"
-                    title="Editar">
-                        <i class="fas fa-edit"></i>
+            {{-- # --}}
+            <td>{{ $orden->numero_oc }}</td>
+
+            {{-- Archivo --}}
+            <td>
+                @if($orden->archivo)
+                    <a href="{{ asset('storage/'.$orden->archivo) }}" target="_blank">
+                        <i class="fas fa-paperclip"></i>
                     </a>
+                @else
+                    -
+                @endif
+            </td>
+
+            {{-- Cliente --}}
+            <td>{{ $orden->cliente->razon_social ?? '-' }}</td>
+
+            {{-- Fecha --}}
+            <td>{{ \Carbon\Carbon::parse($orden->fecha)->format('d/m/Y') }}</td>
+
+            {{-- Estado --}}
+            <td>
+                @if($orden->estado == 'pendiente')
+                    <span class="badge badge-warning">Pendiente</span>
+                @elseif($orden->estado == 'parcial')
+                    <span class="badge badge-info">Parcial</span>
+                @elseif($orden->estado == 'cumplida')
+                    <span class="badge badge-success">Cumplida</span>
+                @elseif($orden->estado == 'anulada')
+                    <span class="badge badge-danger">Anulada</span>
+                @else
+                    -
+                @endif
+            </td>
+
+            {{-- Acciones --}}
+            <td>
+
+                @hasanyrole('admin|ingeniero')
+                <a href="{{ route('ordenes.edit', $orden->id) }}"
+                   class="btn btn-sm btn-primary"
+                   title="Editar">
+                    <i class="fas fa-edit"></i>
+                </a>
                 @endhasanyrole
 
-                {{-- PDF --}}
                 <a href="{{ route('ordenes.pdf', $orden->id) }}"
-                    class="btn btn-sm btn-light"
-                    title="Imprimir PDF"
-                    target="_blank">
+                   class="btn btn-sm btn-light"
+                   title="PDF"
+                   target="_blank">
                     <i class="fas fa-file-pdf" style="color:#d9534f;"></i>
                 </a>
 
-                {{-- ELIMINAR --}}
                 @hasanyrole('admin|ingeniero')
                 <form action="{{ route('ordenes.destroy', $orden->id) }}"
-                    method="POST"
-                    style="display:inline">
-                    @csrf @method('DELETE')
+                      method="POST"
+                      style="display:inline">
+                    @csrf
+                    @method('DELETE')
+
                     <button type="submit"
                             class="btn btn-sm btn-danger"
                             onclick="return confirm('¿Eliminar esta orden?')">
@@ -136,8 +145,7 @@
 
             </td>
 
-
-            </tr>
+        </tr>
         @endforeach
     </tbody>
 </table>

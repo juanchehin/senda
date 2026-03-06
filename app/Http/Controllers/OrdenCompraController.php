@@ -14,22 +14,15 @@ class OrdenCompraController extends Controller
     {
         $query = OrdenCompra::with('cliente');
 
-        if ($request->filled('numero')) {
-            $query->where('numero_oc', 'LIKE', '%' . $request->numero . '%');
-        }
-
         if ($request->filled('proveedor')) {
             $query->whereHas('cliente', function ($q) use ($request) {
                 $q->where('razon_social', 'LIKE', '%' . $request->proveedor . '%');
             });
         }
 
-        if ($request->filled('fecha')) {
-            $query->whereDate('fecha', $request->fecha);
-        }
-
-        if ($request->filled('moneda')) {
-            $query->where('moneda', $request->moneda);
+        // FILTRO ESTADO
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
         }
 
         $ordenes = $query->orderBy('numero_oc', 'asc')
