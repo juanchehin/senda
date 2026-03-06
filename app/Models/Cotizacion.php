@@ -59,4 +59,8 @@ class Cotizacion extends Model
         return 'id_cotizacion';
     }
 
+    public function pedidoCotizacion()
+    {
+        return $this->belongsTo(\App\Models\PedidoCotizacion::class, 'nro_pedido_asoc', 'id_ped_cot');
+    }
 }

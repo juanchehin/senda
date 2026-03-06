@@ -13,7 +13,7 @@ class CotizacionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Cotizacion::with('cliente')->latest();
+        $query = Cotizacion::with(['cliente','pedidoCotizacion'])->latest();
 
         // Cliente (búsqueda parcial)
         if ($request->filled('cliente')) {
