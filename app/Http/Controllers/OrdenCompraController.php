@@ -7,6 +7,7 @@ use App\Models\OrdenItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class OrdenCompraController extends Controller
 {
@@ -39,9 +40,142 @@ class OrdenCompraController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request);
         $validated = $request->validate([
             'numero_oc'         => 'required|string|max:191|unique:orden_compras,numero_oc',
+            'fecha'             => 'required|date',
+            'id_cliente'        => 'required|exists:clientes,id',
+            'cuit'              => 'required|digits:11',
+            'direccion'         => 'nullable|string|max:191',
+            'telefono'          => 'nullable|string|max:50',
+            'email'             => 'nullable|email|max:191',
+            'moneda'            => 'required|in:ARS,USD_BILLETE,USD_DIVISA',
+            'fecha_entrega'     => 'nullable|date',
+            'condicion_compra'  => 'required|string|max:191',
+            'solicitud_compra'  => 'nullable|string|max:191',
+            'observaciones'     => 'nullable|string',
+
+            // ARCHIVO
+            'archivo'           => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:5120',
+
+            'items'                     => 'required|array|min:1',
+            'items.*.codigo'            => 'nullable|string|max:191',
+            'items.*.descripcion'       => 'required|string|max:500',
+            'items.*.cantidad'          => 'required|numeric|min:0',
+            'items.*.unidad'            => 'nullable|string|max:50',
+            'items.*.precio_unitario'   => 'required|numeric|min:0',
+            'items.*.iva'               => 'nullable|numeric|min:0|max:100',
+            'items.*.fecha_entrega'     => 'nullable|date',
+            'items.*.descuento'         => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Subtotales
+        |--------------------------------------------------------------------------
+        */
+
+        $subtotalConIVA = 0;
+        $totalFinal     = 0;
+
+        foreach ($validated['items'] as $item) {
+
+            $cantidad  = floatval($item['cantidad']);
+            $precio    = floatval($item['precio_unitario']);
+            $iva       = floatval($item['iva'] ?? 0);
+            $descuento = floatval($item['descuento'] ?? 0);
+
+            $totalBase   = $cantidad * $precio;
+            $totalConIVA = $totalBase + ($totalBase * ($iva / 100));
+            $totalItem   = $totalConIVA - ($totalConIVA * ($descuento / 100));
+
+            $subtotalConIVA += $totalConIVA;
+            $totalFinal     += $totalItem;
+        }
+
+        $validated['subtotal'] = $subtotalConIVA;
+        $validated['total']    = $totalFinal;
+        $validated['estado']   = 'pendiente';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Subir archivo
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->hasFile('archivo')) {
+
+            $file = $request->file('archivo');
+
+            $nombre = 'oc_' . $validated['numero_oc'] . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+            $ruta = $file->storeAs('ordenes_compra', $nombre, 'public');
+
+            $validated['archivo'] = $ruta;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Crear orden
+        |--------------------------------------------------------------------------
+        */
+
+        $orden = OrdenCompra::create($validated);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Guardar ítems
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($validated['items'] as $item) {
+
+            $cantidad  = floatval($item['cantidad']);
+            $precio    = floatval($item['precio_unitario']);
+            $iva       = floatval($item['iva'] ?? 0);
+            $descuento = floatval($item['descuento'] ?? 0);
+
+            $totalBase   = $cantidad * $precio;
+            $totalConIVA = $totalBase + ($totalBase * ($iva / 100));
+            $totalItem   = $totalConIVA - ($totalConIVA * ($descuento / 100));
+
+            OrdenItem::create([
+                'orden_compra_id' => $orden->id,
+                'codigo'          => $item['codigo'] ?? null,
+                'descripcion'     => $item['descripcion'],
+                'cantidad'        => $cantidad,
+                'unidad'          => $item['unidad'] ?? null,
+                'precio_unitario' => $precio,
+                'iva'             => $iva,
+                'descuento'       => $descuento,
+                'total'           => $totalItem,
+                'fecha_entrega'   => $item['fecha_entrega'] ?? null,
+            ]);
+        }
+
+        return redirect()
+            ->route('ordenes.index')
+            ->with('success', 'Orden de compra creada correctamente.');
+    }
+
+
+    public function show($id)
+    {
+        $orden = OrdenCompra::with('items')->findOrFail($id);
+        return view('admin.ordenes.show', compact('orden'));
+    }
+
+    public function edit($id)
+    {
+        $orden = OrdenCompra::with('items')->findOrFail($id);
+        return view('admin.ordenes.edit', compact('orden'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $orden = OrdenCompra::findOrFail($id);
+
+        $validated = $request->validate([
+            'numero_oc'         => 'required|string|max:191|unique:orden_compras,numero_oc,' . $orden->id,
             'fecha'             => 'required|date',
             'id_cliente'        => 'required|exists:clientes,id',
             'cuit'              => 'required|digits:11',
@@ -68,101 +202,7 @@ class OrdenCompraController extends Controller
         $subtotalConIVA = 0;
         $totalFinal     = 0;
 
-        foreach ($request->items as $item) {
-
-            $cantidad  = floatval($item['cantidad']);
-            $precio    = floatval($item['precio_unitario']);
-            $iva       = floatval($item['iva'] ?? 0);
-            $descuento = floatval($item['descuento'] ?? 0);
-
-            $totalBase   = $cantidad * $precio;
-            $totalConIVA = $totalBase + ($totalBase * ($iva / 100));
-            $totalItem   = $totalConIVA - ($totalConIVA * ($descuento / 100));
-
-            $subtotalConIVA += $totalConIVA;
-            $totalFinal     += $totalItem;
-        }
-
-        $validated['subtotal'] = $subtotalConIVA; // Subtotal c/IVA
-        $validated['total']    = $totalFinal;
-        $validated['estado']   = 'pendiente';
-
-        $orden = OrdenCompra::create($validated);
-
-        foreach ($request->items as $item) {
-
-            $cantidad  = floatval($item['cantidad']);
-            $precio    = floatval($item['precio_unitario']);
-            $iva       = floatval($item['iva'] ?? 0);
-            $descuento = floatval($item['descuento'] ?? 0);
-
-            $totalBase   = $cantidad * $precio;
-            $totalConIVA = $totalBase + ($totalBase * ($iva / 100));
-            $totalItem   = $totalConIVA - ($totalConIVA * ($descuento / 100));
-
-            OrdenItem::create([
-                'orden_compra_id' => $orden->id,
-                'codigo'          => $item['codigo'] ?? null,
-                'descripcion'     => $item['descripcion'],
-                'cantidad'        => $cantidad,
-                'unidad'          => $item['unidad'] ?? null,
-                'precio_unitario' => $precio,
-                'iva'             => $iva,
-                'descuento'       => $descuento,
-                'total'           => $totalItem,
-                'fecha_entrega'   => $item['fecha_entrega'] ?? null,
-            ]);
-        }
-
-        return redirect()->route('ordenes.index')
-            ->with('success', 'Orden de compra creada correctamente.');
-    }
-
-
-    public function show($id)
-    {
-        $orden = OrdenCompra::with('items')->findOrFail($id);
-        return view('admin.ordenes.show', compact('orden'));
-    }
-
-    public function edit($id)
-    {
-        $orden = OrdenCompra::with('items')->findOrFail($id);
-        return view('admin.ordenes.edit', compact('orden'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $orden = OrdenCompra::findOrFail($id);
-
-        $validated = $request->validate([
-            'numero_oc'         => 'required|string|max:191|unique:orden_compras,numero_oc,' . $orden->id,
-            'fecha'             => 'required|date',
-            'proveedor'         => 'required|string|max:191',
-            'cuit'              => 'required|digits:11',
-            'direccion'         => 'nullable|string|max:191',
-            'telefono'          => 'nullable|string|max:50',
-            'email'             => 'nullable|email|max:191',
-            'moneda'            => 'required|in:ARS,USD_BILLETE,USD_DIVISA',
-            'condicion_compra'  => 'required|string|max:191',
-            'solicitud_compra'  => 'nullable|string|max:191',
-            'observaciones'     => 'nullable|string',
-
-            'items'                         => 'required|array|min:1',
-            'items.*.codigo'                => 'nullable|string|max:191',
-            'items.*.descripcion'           => 'required|string|max:500',
-            'items.*.cantidad'              => 'required|numeric|min:0',
-            'items.*.unidad'                => 'nullable|string|max:50',
-            'items.*.precio_unitario'       => 'required|numeric|min:0',
-            'items.*.iva'                   => 'nullable|numeric|min:0|max:100',
-            'items.*.fecha_entrega'         => 'nullable|date',
-            'items.*.descuento'             => 'nullable|numeric|min:0|max:100',
-        ]);
-
-        $subtotalConIVA = 0;
-        $totalFinal     = 0;
-
-        foreach ($request->items as $item) {
+        foreach ($validated['items'] as $item) {
 
             $cantidad  = floatval($item['cantidad']);
             $precio    = floatval($item['precio_unitario']);
@@ -180,36 +220,39 @@ class OrdenCompraController extends Controller
         $validated['subtotal'] = $subtotalConIVA;
         $validated['total']    = $totalFinal;
 
-        $orden->update($validated);
+        DB::transaction(function () use ($validated, $orden) {
 
-        // Eliminar items anteriores
-        OrdenItem::where('orden_compra_id', $orden->id)->delete();
+            $orden->update($validated);
 
-        // Crear nuevamente los items
-        foreach ($request->items as $item) {
+            // eliminar items anteriores
+            OrdenItem::where('orden_compra_id', $orden->id)->delete();
 
-            $cantidad  = floatval($item['cantidad']);
-            $precio    = floatval($item['precio_unitario']);
-            $iva       = floatval($item['iva'] ?? 0);
-            $descuento = floatval($item['descuento'] ?? 0);
+            // recrear items
+            foreach ($validated['items'] as $item) {
 
-            $totalBase   = $cantidad * $precio;
-            $totalConIVA = $totalBase + ($totalBase * ($iva / 100));
-            $totalItem   = $totalConIVA - ($totalConIVA * ($descuento / 100));
+                $cantidad  = floatval($item['cantidad']);
+                $precio    = floatval($item['precio_unitario']);
+                $iva       = floatval($item['iva'] ?? 0);
+                $descuento = floatval($item['descuento'] ?? 0);
 
-            OrdenItem::create([
-                'orden_compra_id' => $orden->id,
-                'codigo'          => $item['codigo'] ?? null,
-                'descripcion'     => $item['descripcion'],
-                'cantidad'        => $cantidad,
-                'unidad'          => $item['unidad'] ?? null,
-                'precio_unitario' => $precio,
-                'iva'             => $iva,
-                'descuento'       => $descuento,
-                'total'           => $totalItem,
-                'fecha_entrega'   => $item['fecha_entrega'] ?? null,
-            ]);
-        }
+                $totalBase   = $cantidad * $precio;
+                $totalConIVA = $totalBase + ($totalBase * ($iva / 100));
+                $totalItem   = $totalConIVA - ($totalConIVA * ($descuento / 100));
+
+                OrdenItem::create([
+                    'orden_compra_id' => $orden->id,
+                    'codigo'          => $item['codigo'] ?? null,
+                    'descripcion'     => $item['descripcion'],
+                    'cantidad'        => $cantidad,
+                    'unidad'          => $item['unidad'] ?? null,
+                    'precio_unitario' => $precio,
+                    'iva'             => $iva,
+                    'descuento'       => $descuento,
+                    'total'           => $totalItem,
+                    'fecha_entrega'   => $item['fecha_entrega'] ?? null,
+                ]);
+            }
+        });
 
         return redirect()->route('ordenes.index')
             ->with('success', 'Orden de compra actualizada correctamente.');

@@ -26,6 +26,7 @@ class OrdenCompra extends Model
         'subtotal',
         'total',
         'observaciones',
+        'archivo',
         'estado'
     ];
 

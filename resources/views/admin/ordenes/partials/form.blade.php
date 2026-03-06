@@ -101,12 +101,27 @@
         </select>
     </div>
 
-
-
-
     <div class="col-md-4">
-        <label>Condición de compra</label>
-        <input type="text" name="condicion_compra" class="form-control" value="{{ old('condicion_compra', $orden->condicion_compra ?? '') }}" required>
+            <label>Condición de compra</label>
+            <input type="text" name="condicion_compra" class="form-control" value="{{ old('condicion_compra', $orden->condicion_compra ?? '') }}" required>
+        </div>
+
+        <div class="col-md-4">
+        <label>Archivo (PDF / Imagen)</label>
+
+        <input type="file"
+            name="archivo"
+            class="form-control"
+            accept=".pdf,.png,.jpg,.jpeg">
+
+        @if(isset($orden) && $orden->archivo)
+            <small class="text-muted d-block mt-1">
+                Archivo actual:
+                <a href="{{ asset('storage/'.$orden->archivo) }}" target="_blank">
+                    Ver archivo
+                </a>
+            </small>
+        @endif
     </div>
 
 </div>
