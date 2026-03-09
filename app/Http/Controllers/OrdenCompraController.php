@@ -171,7 +171,8 @@ class OrdenCompraController extends Controller
 
     public function edit($id)
     {
-        $orden = OrdenCompra::with('items')->findOrFail($id);
+        $orden = OrdenCompra::with(['cliente','items'])->findOrFail($id);
+
         return view('admin.ordenes.edit', compact('orden'));
     }
 
