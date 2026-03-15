@@ -82,10 +82,10 @@
     <thead>
         <tr>
             <th>NO Cotización</th>
-            <th>Archivo</th>
             <th>Cliente</th>
             <th>Fecha</th>
             <th>Motivo</th>
+            <th>Forma Pago</th>
             <th>Moneda</th>
             <th>Total</th>
             <th>Estado</th>
@@ -97,16 +97,6 @@
             <tr>
                 {{-- Nº Cotización --}}
                 <td>{{ $cotizacion->id_cotizacion }}</td>
-
-                <td>
-                    @if($cotizacion->pedidoCotizacion && $cotizacion->pedidoCotizacion->archivo)
-                        <a href="{{ asset('storage/'.$cotizacion->pedidoCotizacion->archivo) }}" target="_blank">
-                            <i class="fas fa-file"></i>
-                        </a>
-                    @else
-                        -
-                    @endif
-                </td>
 
                 {{-- Cliente --}}
                 <td>{{ $cotizacion->cliente->razon_social ?? '—' }}</td>
@@ -124,6 +114,9 @@
                         —
                     @endif
                 </td>
+
+                {{--  --}}
+                <td>{{ $cotizacion->forma_pago }}</td>
 
                 {{-- Moneda --}}
                 <td>{{ $cotizacion->moneda }}</td>
