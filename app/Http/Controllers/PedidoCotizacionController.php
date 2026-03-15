@@ -143,4 +143,14 @@ class PedidoCotizacionController extends Controller
         return back()->with('success', 'Comentarios guardada correctamente.');
     }
 
+    public function noCotizo($id)
+    {
+        $pedido = PedidoCotizacion::findOrFail($id);
+
+        $pedido->estado_pc = 'n';
+        $pedido->save();
+
+        return redirect()->back()->with('ok','Pedido marcado como NO COTIZÓ');
+    }
+
 }

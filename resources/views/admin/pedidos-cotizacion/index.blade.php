@@ -82,7 +82,8 @@
             <th>Archivo</th>
             <th>Cliente</th>
             <th>Fecha</th>
-            <th>Comentarios</th>
+            <th>Solicitud</th>
+            <th>Items Excluidos</th>
             <th>Estado</th>
             <th>Acciones</th>
         </tr>
@@ -115,24 +116,30 @@
                     {{ \Carbon\Carbon::parse($pedido->fecha)->format('d/m/Y') }}
                 </td>
 
-               {{-- comentarios --}}
+               {{--  --}}
                 <td>
-                    {{ $pedido->comentarios ?? '-' }}
+                    {{ $pedido->nro_solicitud ?? '-' }}
                 </td>
 
+                {{--  --}}
+                <td>
+                    {{ $pedido->items_excluidos ?? '-' }}
+                </td>
 
                 {{-- Estado --}}
                 <td>
-                    @php
+                   @php
                         $estadoTexto = match($pedido->estado_pc) {
                             'p' => 'Pendiente',
                             'c' => 'Cotizado',
+                            'n' => 'No cotizó',
                             default => 'Sin definir'
                         };
 
                         $color = match($pedido->estado_pc) {
                             'p' => 'warning',
                             'c' => 'success',
+                            'n' => 'danger',
                             default => 'secondary'
                         };
                     @endphp
@@ -157,14 +164,34 @@
                     @endif
 
 
-                    {{-- BOTÓN OBSERVACIÓN (SIEMPRE ACTIVO) --}}
-                    <button type="button"
-                            class="btn btn-sm btn-secondary"
-                            data-toggle="modal"
-                            data-target="#modalComentarios"
-                            data-id="{{ $pedido->id_ped_cot }}">
-                        <i class="fas fa-comment"></i>
-                    </button>
+                    {{-- BOTÓN NO COTIZÓ --}}
+                    @if($pedido->estado_pc == 'p')
+                        <form action="{{ route('pedidos-cotizacion.no-cotizo', $pedido->id_ped_cot) }}"
+                            method="POST"
+                            style="display:inline">
+
+                            @csrf
+                            @method('PATCH')
+
+                            <button type="submit"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Marcar como No Cotizó"
+                                    onclick="return confirm('¿Marcar este pedido como NO COTIZÓ?')">
+
+                                <i class="fas fa-ban"></i>
+
+                            </button>
+
+                        </form>
+                    @else
+                        <button class="btn btn-sm btn-outline-danger"
+                                disabled
+                                title="El pedido ya no está pendiente">
+
+                            <i class="fas fa-ban"></i>
+
+                        </button>
+                    @endif
 
 
                     {{-- ELIMINAR --}}
@@ -195,67 +222,5 @@
 
 {{ $pedidos->appends(request()->query())->links() }}
 
-{{-- =========================
-     MODAL OBSERVACIÓN
-========================= --}}
-<div class="modal fade" id="modalComentarios" tabindex="-1">
-    <div class="modal-dialog">
-        <form method="POST"
-              action="{{ route('pedidos-cotizacion.comentarios.store') }}">
-            @csrf
-            <input type="hidden"
-                   name="pedido_id"
-                   id="id_pedido">
-
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        Agregar Comentarios
-                    </h5>
-                    <button type="button"
-                            class="close"
-                            data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Comentarios</label>
-                        <textarea name="comentarios"
-                                  class="form-control"
-                                  rows="4"
-                                  required></textarea>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="submit"
-                            class="btn btn-primary">
-                        Guardar
-                    </button>
-
-                    <button type="button"
-                            class="btn btn-secondary"
-                            data-dismiss="modal">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-@section('js')
-
-<script>
-    $('#modalComentarios').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget);
-        var pedidoId = button.data('id');
-        $('#id_pedido').val(pedidoId);
-    });
-</script>
-
-@endsection
 
 @stop

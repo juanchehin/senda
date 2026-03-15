@@ -105,6 +105,10 @@ Route::middleware(['auth', 'role:secretaria|admin|ingeniero'])->group(function (
     )->name('pedidos-cotizacion.comentarios.store');
 
 
+    Route::patch('/pedidos-cotizacion/{id}/no-cotizo',
+        [PedidoCotizacionController::class,'noCotizo'])
+    ->name('pedidos-cotizacion.no-cotizo');
+
     /* =======================
      | NOTAS DE DÉBITO
      ======================= */
@@ -150,6 +154,7 @@ Route::middleware(['auth', 'role:secretaria|admin|ingeniero'])->group(function (
     Route::post('remitos/{remito}/confirmar',
         [RemitoController::class, 'confirmar']
     )->name('remitos.confirmar');
+
 
 });
 
