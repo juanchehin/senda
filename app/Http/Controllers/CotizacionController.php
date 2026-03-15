@@ -13,32 +13,41 @@ class CotizacionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Cotizacion::with(['cliente','pedidoCotizacion'])->latest();
+        $query = Cotizacion::with(['cliente','pedidoCotizacion'])
+                    ->orderBy('fecha_cot','desc');
 
         // Cliente (búsqueda parcial)
         if ($request->filled('cliente')) {
+
             $query->whereHas('cliente', function ($q) use ($request) {
-                $q->where('razon_social', 'like', '%' . $request->cliente . '%');
+                $q->where('razon_social','like','%'.$request->cliente.'%');
             });
         }
 
         // Motivo
         if ($request->filled('motivo')) {
-            $query->where('motivo', $request->motivo);
+            $query->where('motivo',$request->motivo);
         }
 
         // Estado
         if ($request->filled('estado')) {
 
             if ($request->estado === 'VIGENTE') {
+
                 $query->where(function ($q) {
+
                     $q->whereNull('vigencia_oferta')
-                    ->orWhere('vigencia_oferta', '>=', now());
+                      ->orWhere('vigencia_oferta','>=',now());
+
                 });
+
             }
 
             if ($request->estado === 'VENCIDA') {
-                $query->where('vigencia_oferta', '<', now());
+
+                $query->whereNotNull('vigencia_oferta')
+                      ->where('vigencia_oferta','<',now());
+
             }
         }
 
@@ -55,73 +64,112 @@ class CotizacionController extends Controller
 
     public function store(Request $request)
     {
+
         $request->validate([
+
             'fecha_cot' => 'required|date',
             'id_cliente' => 'required|exists:clientes,id',
-            'nro_pedido_asoc' => 'nullable|string|max:50',
+
+            'quien_cotiza' => 'nullable|string|max:150',
+
+            'moneda' => 'required|in:ARS,USD_BILLETE,USD_DIVISA',
+
             'forma_pago' => 'required|string|max:20',
+
             'motivo' => 'required|in:pedido,particular',
+
+            'nro_pedido_asoc' => 'nullable|string|max:50',
+
             'items' => 'required|array|min:1',
-            'items.*.producto' => 'required|string|max:45',
+
+            'items.*.producto' => 'required|string|max:255',
             'items.*.cantidad' => 'required|numeric|min:1',
             'items.*.precio_unitario' => 'required|numeric|min:0',
             'items.*.iva' => 'nullable|numeric|min:0'
+
         ]);
+
 
         DB::beginTransaction();
 
         try {
 
-            //
+            // Crear cotización
             $cotizacion = Cotizacion::create([
+
                 'fecha_cot' => $request->fecha_cot,
                 'id_cliente' => $request->id_cliente,
+
+                'quien_cotiza' => $request->quien_cotiza,
+
                 'nro_pedido_asoc' => $request->nro_pedido_asoc,
+
                 'moneda' => $request->moneda,
                 'forma_pago' => $request->forma_pago,
+
                 'lugar_entrega' => $request->lugar_entrega,
                 'plazo_entrega' => $request->plazo_entrega,
+
                 'vigencia_oferta' => $request->vigencia_oferta,
-                'especificaciones_tecnicas' => $request->especificaciones_tecnicas,
+
                 'motivo' => $request->motivo,
+
+                'especificaciones_tecnicas' => $request->especificaciones_tecnicas,
+
                 'observaciones' => $request->observaciones,
-                'importe_total' => $request->importe_total ?? 0,
+
+                'importe_total' => $request->importe_total ?? 0
+
             ]);
 
-            //
+
+            // Guardar items
             foreach ($request->items as $item) {
 
                 $cotizacion->items()->create([
+
                     'producto' => $item['producto'],
                     'cantidad' => $item['cantidad'],
                     'precio_unitario' => $item['precio_unitario'],
-                    'iva' => $item['iva'] ?? 0,
+                    'iva' => $item['iva'] ?? 0
+
                 ]);
             }
+
 
             // actualizar estado del pedido si corresponde
             if ($request->filled('nro_pedido_asoc')) {
 
-                $pedido = PedidoCotizacion::where('id_ped_cot', $request->nro_pedido_asoc)->first();
+                $pedido = PedidoCotizacion::where(
+                    'id_ped_cot',
+                    $request->nro_pedido_asoc
+                )->first();
 
                 if ($pedido) {
+
                     $pedido->update([
                         'estado_pc' => 'c'
                     ]);
                 }
             }
 
+
             DB::commit();
 
-            return redirect()->route('cotizaciones.index')
-                ->with('success', 'Cotización creada correctamente');
+
+            return redirect()
+                ->route('cotizaciones.index')
+                ->with('success','Cotización creada correctamente');
+
 
         } catch (\Exception $e) {
 
             DB::rollBack();
 
-            return back()->withInput()
-                ->with('error', 'Error al guardar la cotización');
+            return back()
+                ->withInput()
+                ->with('error','Error al guardar la cotización');
+
         }
     }
 

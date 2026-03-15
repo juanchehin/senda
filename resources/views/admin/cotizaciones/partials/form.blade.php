@@ -1,7 +1,7 @@
 <div class="row">
 
     {{-- Fecha --}}
-    <div class="col-md-3">
+    <div class="col-md-2">
         <label>Fecha</label>
         <input type="date"
             name="fecha_cot"
@@ -12,8 +12,18 @@
             required>
     </div>
 
+    {{-- Quien Cotiza --}}
+    <div class="col-md-3">
+        <label>Quién Cotiza</label>
+        <input type="text"
+               name="quien_cotiza"
+               class="form-control"
+               placeholder="Nombre de quien realiza la cotización"
+               value="{{ old('quien_cotiza', $cotizacion->quien_cotiza ?? '') }}">
+    </div>
+
     {{-- Cliente --}}
-    <div class="col-md-6">
+    <div class="col-md-5">
         <label>Cliente</label>
 
         <div class="position-relative">
@@ -41,7 +51,7 @@
     </div>
 
     {{-- Moneda --}}
-    <div class="col-md-3">
+    <div class="col-md-2">
         <label>Moneda</label>
         <select name="moneda" class="form-control" required>
             <option value="ARS" {{ old('moneda', $cotizacion->moneda ?? 'ARS') == 'ARS' ? 'selected' : '' }}>

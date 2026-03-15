@@ -23,6 +23,7 @@ class Cotizacion extends Model
         'vigencia_oferta',
         'especificaciones_tecnicas',
         'motivo',
+        'quien_cotiza',
         'observaciones',
         'importe_total'
     ];
