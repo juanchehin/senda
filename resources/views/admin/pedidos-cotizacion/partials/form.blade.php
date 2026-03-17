@@ -82,7 +82,7 @@
 
     {{-- Items Excluidos --}}
     <div class="col-md-12">
-        <label>Items Excluidos</label>
+        <label>Articulos Excluidos</label>
         <input type="text"
                name="items_excluidos"
                class="form-control"

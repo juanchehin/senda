@@ -83,7 +83,7 @@
             <th>Cliente</th>
             <th>Fecha</th>
             <th>Solicitud</th>
-            <th>Items Excluidos</th>
+            <th>Articulos Excluidos</th>
             <th>Estado</th>
             <th>Acciones</th>
         </tr>
