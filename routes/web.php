@@ -89,6 +89,12 @@ Route::middleware(['auth', 'role:secretaria|admin|ingeniero'])->group(function (
         [CotizacionController::class, 'pdf']
     )->name('cotizaciones.pdf');
 
+    // Marcar como rechazada
+    Route::post('cotizaciones/{cotizacion}/rechazar',
+        [CotizacionController::class, 'rechazar']
+    )->name('cotizaciones.rechazar');
+
+
 
     /* =======================
      | pedido cotizacion

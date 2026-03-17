@@ -213,5 +213,34 @@ class CotizacionController extends Controller
 
         return $pdf->stream('cotizacion_'.$cotizacion->id.'.pdf');
     }
+
+    public function rechazar(Cotizacion $cotizacion)
+    {
+        try {
+
+            // Si está vencida, no permitir rechazar (opcional)
+            if ($cotizacion->vigencia_oferta && now()->gt($cotizacion->vigencia_oferta)) {
+                return redirect()
+                    ->route('cotizaciones.index')
+                    ->with('error', 'No se puede rechazar una cotización vencida');
+            }
+
+            // Actualizar estado
+            $cotizacion->update([
+                'estado_cotizacion' => 'r'
+            ]);
+
+            return redirect()
+                ->route('cotizaciones.index')
+                ->with('success', 'Cotización marcada como rechazada');
+
+        } catch (\Exception $e) {
+
+            return redirect()
+                ->route('cotizaciones.index')
+                ->with('error', 'Error al rechazar la cotización');
+
+        }
+    }
 }
 

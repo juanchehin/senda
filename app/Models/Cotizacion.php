@@ -24,6 +24,7 @@ class Cotizacion extends Model
         'especificaciones_tecnicas',
         'motivo',
         'quien_cotiza',
+        'estado_cotizacion',
         'observaciones',
         'importe_total'
     ];

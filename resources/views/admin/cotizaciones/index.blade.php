@@ -81,7 +81,7 @@
 <table class="table table-bordered table-striped">
     <thead>
         <tr>
-            <th>NO Cotización</th>
+            <th>#</th>
             <th>Cliente</th>
             <th>Fecha</th>
             <th>Motivo</th>
@@ -131,29 +131,64 @@
                     @if($cotizacion->vigencia_oferta && now()->gt($cotizacion->vigencia_oferta))
                         <span class="badge badge-danger">Vencida</span>
                     @else
-                        <span class="badge badge-success">Vigente</span>
+                        @switch($cotizacion->estado_cotizacion)
+                            @case('v')
+                                <span class="badge badge-success">Vigente</span>
+                                @break
+
+                            @case('e')
+                                <span class="badge badge-danger">Vencida</span>
+                                @break
+
+                            @case('r')
+                                <span class="badge badge-secondary">Rechazada</span>
+                                @break
+
+                            @case('p')
+                                <span class="badge badge-warning">Parcial</span>
+                                @break
+
+                            @case('a')
+                                <span class="badge badge-primary">Aceptada</span>
+                                @break
+
+                            @default
+                                <span class="badge badge-light">—</span>
+                        @endswitch
                     @endif
                 </td>
 
                 {{-- Acciones --}}
                 <td>
 
-                    <a href="{{ route('cotizaciones.show', $cotizacion->id_cotizacion) }}"
-                    class="btn btn-sm btn-info">
-                        <i class="fas fa-eye"></i>
-                    </a>
-
-                    <a href="{{ route('cotizaciones.edit', $cotizacion->id_cotizacion) }}"
-                    class="btn btn-sm btn-warning">
-                        <i class="fas fa-edit"></i>
-                    </a>
-
+                    {{-- Ver PDF --}}
                     <a href="{{ route('cotizaciones.pdf', $cotizacion->id_cotizacion) }}"
                     class="btn btn-sm btn-light"
-                    target="_blank">
+                    target="_blank"
+                    title="Ver PDF">
                         <i class="fas fa-file-pdf text-danger"></i>
                     </a>
 
+                    {{-- Editar --}}
+                    <a href="{{ route('cotizaciones.edit', $cotizacion->id_cotizacion) }}"
+                    class="btn btn-sm btn-warning"
+                    title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </a>
+
+                    {{-- Rechazada --}}
+                    <form action="{{ route('cotizaciones.rechazar', $cotizacion->id_cotizacion) }}"
+                        method="POST"
+                        style="display:inline">
+                        @csrf
+                        <button class="btn btn-sm btn-secondary"
+                                title="Rechazar"
+                                onclick="return confirm('¿Marcar como rechazada esta cotización?')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+
+                    {{-- Eliminar --}}
                     <form action="{{ route('cotizaciones.destroy', $cotizacion->id_cotizacion) }}"
                         method="POST"
                         style="display:inline">
@@ -161,7 +196,8 @@
                         @method('DELETE')
                         <button type="submit"
                                 class="btn btn-sm btn-danger"
-                                onclick="return confirm('¿Eliminar esta cotización?')">
+                                onclick="return confirm('¿Eliminar esta cotización?')"
+                                title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>
