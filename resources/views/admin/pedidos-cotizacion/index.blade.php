@@ -79,9 +79,9 @@
     <thead>
         <tr>
             <th>#</th>
-            <th>Archivo</th>
             <th>Cliente</th>
             <th>Fecha</th>
+            <th>Archivo</th>
             <th>Solicitud</th>
             <th>Articulos Excluidos</th>
             <th>Estado</th>
@@ -93,6 +93,16 @@
         @foreach($pedidos as $pedido)
             <tr>
                 <td>{{ $pedido->id_ped_cot }}</td>
+
+                {{-- Cliente --}}
+                <td>
+                    {{ $pedido->cliente->razon_social ?? '-' }}
+                </td>
+
+                {{-- Fecha --}}
+                <td>
+                    {{ \Carbon\Carbon::parse($pedido->fecha)->format('d/m/Y') }}
+                </td>
 
                  {{-- Archivo --}}
                 <td>
@@ -107,14 +117,6 @@
                     @endif
                 </td>
 
-                {{-- Cliente --}}
-                <td>
-                    {{ $pedido->cliente->razon_social ?? '-' }}
-                </td>
-                {{-- Fecha --}}
-                <td>
-                    {{ \Carbon\Carbon::parse($pedido->fecha)->format('d/m/Y') }}
-                </td>
 
                {{--  --}}
                 <td>
