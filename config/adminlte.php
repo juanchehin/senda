@@ -439,6 +439,27 @@ return [
             ],
         ],
 
+        // recibos
+        [
+            'text'    => 'Recibos',
+            'icon'    => 'fas fa-fw fa-receipt', // ✔ icono correcto
+            'can'     => 'ver recibos',
+            'submenu' => [
+                [
+                    'text'  => 'Nuevo Recibo',
+                    'route' => 'recibos.create',
+                    'icon'  => 'fas fa-fw fa-file-invoice-dollar', // ✔ crear comprobante
+                    'can'   => 'crear recibos',
+                ],
+                [
+                    'text'  => 'Listado de Recibos',
+                    'route' => 'recibos.index',
+                    'icon'  => 'fas fa-fw fa-list-alt', // ✔ listado más adecuado
+                    'can'   => 'ver recibos',
+                ],
+            ],
+        ],
+
         // CONFIGURACIÓN (solo administrador)
         [
             'text'    => 'Configuración',
