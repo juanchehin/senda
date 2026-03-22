@@ -9,6 +9,7 @@ use App\Models\OrdenCompra;
 use App\Models\Factura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class RemitoController extends Controller
 {
@@ -222,10 +223,13 @@ class RemitoController extends Controller
     /**
      * PDF
      */
+
     public function pdf(Remito $remito)
     {
         $remito->load(['cliente', 'items']);
 
-        return view('admin.remitos.pdf', compact('remito'));
+        $pdf = Pdf::loadView('admin.remitos.pdf', compact('remito'));
+
+        return $pdf->stream('remito_'.$remito->numero_remito.'.pdf');
     }
 }

@@ -133,42 +133,42 @@ class ReciboController extends Controller
 
 
     public function generar_pdf_recibo(Recibo $recibo)
-{
-    $pdf = new TCPDF();
+    {
+        $pdf = new TCPDF();
 
-    $pdf::SetTitle('Recibo ' . $recibo->nro_recibo);
+        $pdf::SetTitle('Recibo ' . $recibo->nro_recibo);
 
-    // Sin márgenes
-    $pdf::SetMargins(0, 0, 0);
-    $pdf::SetAutoPageBreak(false, 0);
+        // Sin márgenes
+        $pdf::SetMargins(0, 0, 0);
+        $pdf::SetAutoPageBreak(false, 0);
 
-    $pdf::AddPage();
+        $pdf::AddPage();
 
-    // Ruta de la imagen base
-    $imagePath = public_path('assets/img/recibo_base.png');
+        // Ruta de la imagen base
+        $imagePath = public_path('assets/img/recibo_base.png');
 
-    // Insertar imagen base
-    $pdf::Image($imagePath, 0, 0, 210, 297, 'PNG');
+        // Insertar imagen base
+        $pdf::Image($imagePath, 0, 0, 210, 297, 'PNG');
 
-    /**
-     * 1️⃣ TAPAR EL NÚMERO ORIGINAL DE LA PLANTILLA
-     * Dibujamos un rectángulo blanco sobre el número impreso en la imagen
-     * (Ajustar ancho/alto si lo necesitás)
-     */
-    $pdf::SetFillColor(255, 255, 255); // blanco
-    $pdf::Rect(128, 23, 50, 12, 'F'); // X, Y, ANCHO, ALTO
+        /**
+         * 1️⃣ TAPAR EL NÚMERO ORIGINAL DE LA PLANTILLA
+         * Dibujamos un rectángulo blanco sobre el número impreso en la imagen
+         * (Ajustar ancho/alto si lo necesitás)
+         */
+        $pdf::SetFillColor(255, 255, 255); // blanco
+        $pdf::Rect(128, 23, 50, 12, 'F'); // X, Y, ANCHO, ALTO
 
-    /**
-     * 2️⃣ ESCRIBIR EL NÚMERO NUEVO ENCIMA
-     */
-    $pdf::SetFont('helvetica', 'B', 23);
-    $pdf::SetTextColor(0, 0, 0); // negro
+        /**
+         * 2️⃣ ESCRIBIR EL NÚMERO NUEVO ENCIMA
+         */
+        $pdf::SetFont('helvetica', 'B', 23);
+        $pdf::SetTextColor(0, 0, 0); // negro
 
-    $pdf::SetXY(130, 25);
-    $pdf::Write(0, $recibo->nro_recibo);
+        $pdf::SetXY(130, 25);
+        $pdf::Write(0, $recibo->nro_recibo);
 
-    return response($pdf::Output('recibo.pdf', 'S'))
-            ->header('Content-Type', 'application/pdf');
-}
+        return response($pdf::Output('recibo.pdf', 'S'))
+                ->header('Content-Type', 'application/pdf');
+    }
 
 }
